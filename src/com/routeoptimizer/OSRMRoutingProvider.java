@@ -138,11 +138,125 @@ public class OSRMRoutingProvider implements RoutingProvider {
         return cache;
     }
 
+    public RouteMetrics getMultiStopRoute(java.util.List<GeoLocation> waypoints) {
+        if (waypoints == null || waypoints.size() < 2) {
+            return new RouteMetrics(0.001, 0.001, "[]");
+        }
+
+        StringBuilder urlBuilder = new StringBuilder();
+        urlBuilder.append(baseUrl).append("/route/v1/driving/");
+        for (int i = 0; i < waypoints.size(); i++) {
+            GeoLocation w = waypoints.get(i);
+            if (i > 0) urlBuilder.append(";");
+            urlBuilder.append(String.format(Locale.US, "%.6f,%.6f", w.getLongitude(), w.getLatitude()));
+        }
+        urlBuilder.append("?overview=full&geometries=geojson");
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(urlBuilder.toString()))
+                    .timeout(Duration.ofSeconds(timeoutSeconds))
+                    .header("User-Agent", "QuantumRouteOptimizer/3.0")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200 && response.body().contains("\"code\":\"Ok\"")) {
+                String body = response.body();
+                double distMeters = extractTotalDistance(body);
+                double durSeconds = extractTotalDuration(body);
+
+                double distKm = distMeters / 1000.0;
+                double timeMin = durSeconds / 60.0;
+                String geometryJson = extractGeometry(body);
+
+                return new RouteMetrics(distKm, timeMin, geometryJson);
+            }
+        } catch (Exception e) {
+            // Fallback gracefully
+        }
+
+        // Fallback by summing haversine legs
+        double totalDist = 0;
+        double totalTime = 0;
+        StringBuilder fbGeo = new StringBuilder("[");
+        for (int i = 0; i < waypoints.size(); i++) {
+            if (i > 0) {
+                RouteMetrics leg = fallbackProvider.getRoute(waypoints.get(i - 1), waypoints.get(i));
+                totalDist += leg.getDistanceKm();
+                totalTime += leg.getTravelTimeMinutes();
+                fbGeo.append(",");
+            }
+            fbGeo.append(String.format(Locale.US, "[%.6f,%.6f]", waypoints.get(i).getLongitude(), waypoints.get(i).getLatitude()));
+        }
+        fbGeo.append("]");
+
+        return new RouteMetrics(totalDist, totalTime, fbGeo.toString());
+    }
+
+    private String extractGeometry(String body) {
+        int geomIdx = body.indexOf("\"coordinates\":");
+        if (geomIdx != -1) {
+            int start = body.indexOf("[", geomIdx);
+            if (start != -1) {
+                int depth = 0;
+                for (int i = start; i < body.length(); i++) {
+                    char c = body.charAt(i);
+                    if (c == '[') depth++;
+                    else if (c == ']') {
+                        depth--;
+                        if (depth == 0) {
+                            return body.substring(start, i + 1);
+                        }
+                    }
+                }
+            }
+        }
+        return "[]";
+    }
+
     private double extractDouble(Pattern pattern, String text) {
         Matcher matcher = pattern.matcher(text);
         if (matcher.find()) {
             return Double.parseDouble(matcher.group(1));
         }
         return 0.0;
+    }
+
+    private double extractTotalDistance(String body) {
+        int legsIdx = body.indexOf("\"legs\":");
+        int waypointsIdx = body.indexOf("\"waypoints\":");
+        String searchArea = body;
+        if (legsIdx != -1 && waypointsIdx != -1 && waypointsIdx > legsIdx) {
+            searchArea = body.substring(legsIdx, waypointsIdx);
+        }
+
+        Matcher matcher = DISTANCE_PATTERN.matcher(searchArea);
+        double sum = 0.0;
+        int count = 0;
+        while (matcher.find()) {
+            sum += Double.parseDouble(matcher.group(1));
+            count++;
+        }
+        return count > 0 ? sum : extractDouble(DISTANCE_PATTERN, body);
+    }
+
+    private double extractTotalDuration(String body) {
+        int legsIdx = body.indexOf("\"legs\":");
+        int waypointsIdx = body.indexOf("\"waypoints\":");
+        String searchArea = body;
+        if (legsIdx != -1 && waypointsIdx != -1 && waypointsIdx > legsIdx) {
+            searchArea = body.substring(legsIdx, waypointsIdx);
+        }
+
+        Matcher matcher = DURATION_PATTERN.matcher(searchArea);
+        double sum = 0.0;
+        int count = 0;
+        while (matcher.find()) {
+            sum += Double.parseDouble(matcher.group(1));
+            count++;
+        }
+        return count > 0 ? sum : extractDouble(DURATION_PATTERN, body);
     }
 }

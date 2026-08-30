@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { BENGALURU_CENTER, getVehicleColor, PRIORITY_COLORS, formatTime } from '../utils/constants';
+import { fetchOSRMRouteGeometry } from '../services/api';
 
 export function FleetMap({
   depots = [],
@@ -14,7 +15,10 @@ export function FleetMap({
   const mapInstanceRef = useRef(null);
   const layersGroupRef = useRef(null);
 
-  // Initialize Map centered on Bengaluru
+  const [isLoadingGeometry, setIsLoadingGeometry] = useState(false);
+  const [roadGeometries, setRoadGeometries] = useState({});
+
+  // 1. Initialize Map centered on Bengaluru
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -41,7 +45,6 @@ export function FleetMap({
     }
 
     return () => {
-      // Map cleanup on unmount
       if (mapInstanceRef.current) {
         try {
           mapInstanceRef.current.remove();
@@ -53,7 +56,80 @@ export function FleetMap({
     };
   }, []);
 
-  // Update Markers, Routes, and Location
+  // 2. Fetch OSRM Road-Following Geometries for all Vehicle Routes
+  useEffect(() => {
+    const depotMap = new Map();
+    (depots || []).forEach(d => {
+      if (d && d.latitude && d.longitude) {
+        depotMap.set(d.id, d);
+        if (d.depotId) depotMap.set(d.depotId, d);
+      }
+    });
+
+    const customerMap = new Map();
+    (customers || []).forEach(c => {
+      if (c && c.latitude && c.longitude) {
+        customerMap.set(c.id, c);
+        if (c.customerId) customerMap.set(c.customerId, c);
+      }
+    });
+
+    let routesToFetch = [];
+    if (optimization && optimization.vehicleRoutes && Array.isArray(optimization.vehicleRoutes)) {
+      routesToFetch = optimization.vehicleRoutes;
+    } else {
+      // Default initial Indian demo routes for visual demo
+      routesToFetch = [
+        { vehicleId: 'V1', homeDepotId: 'W1', customerSequence: ['C6', 'C3'] },
+        { vehicleId: 'V2', homeDepotId: 'W1', customerSequence: ['C1', 'C2'] },
+        { vehicleId: 'V3', homeDepotId: 'W2', customerSequence: ['C4', 'C5', 'C7', 'C8'] }
+      ];
+    }
+
+    let isMounted = true;
+    const loadAllGeometries = async () => {
+      setIsLoadingGeometry(true);
+      const newGeometries = {};
+
+      for (const vr of routesToFetch) {
+        const depotId = vr.homeDepotId || vr.depotId || 'W1';
+        const homeDepot = depotMap.get(depotId) || (depots.length > 0 ? depots[0] : null);
+        if (!homeDepot || !homeDepot.latitude) continue;
+
+        const waypoints = [[homeDepot.latitude, homeDepot.longitude]];
+        const stopIds = vr.customerSequence || (vr.stops ? vr.stops.map(s => s.customerId || s.id) : []);
+        stopIds.forEach(cId => {
+          const cust = customerMap.get(cId);
+          if (cust && cust.latitude && cust.longitude) {
+            waypoints.push([cust.latitude, cust.longitude]);
+          }
+        });
+        waypoints.push([homeDepot.latitude, homeDepot.longitude]);
+
+        if (waypoints.length >= 2) {
+          try {
+            const roadCoords = await fetchOSRMRouteGeometry(waypoints);
+            newGeometries[vr.vehicleId] = roadCoords;
+          } catch (e) {
+            newGeometries[vr.vehicleId] = waypoints;
+          }
+        }
+      }
+
+      if (isMounted) {
+        setRoadGeometries(newGeometries);
+        setIsLoadingGeometry(false);
+      }
+    };
+
+    loadAllGeometries();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [optimization, depots, customers]);
+
+  // 3. Render Markers, Road-Following Polylines, and Vehicle Position Icons
   useEffect(() => {
     const map = mapInstanceRef.current;
     const group = layersGroupRef.current;
@@ -67,24 +143,6 @@ export function FleetMap({
 
     const bounds = L.latLngBounds([]);
 
-    // Map depot lookup
-    const depotMap = new Map();
-    (depots || []).forEach(d => {
-      if (d && d.latitude && d.longitude) {
-        depotMap.set(d.id, d);
-        if (d.depotId) depotMap.set(d.depotId, d);
-      }
-    });
-
-    // Map customer lookup
-    const customerMap = new Map();
-    (customers || []).forEach(c => {
-      if (c && c.latitude && c.longitude) {
-        customerMap.set(c.id, c);
-        if (c.customerId) customerMap.set(c.customerId, c);
-      }
-    });
-
     // 1. Draw Depots
     (depots || []).forEach(d => {
       if (!d || !d.latitude || !d.longitude) return;
@@ -93,7 +151,7 @@ export function FleetMap({
 
       const isW1 = d.id === 'W1';
       const depotBg = isW1 ? '#8b5cf6' : '#10b981';
-      const labelText = d.name || (isW1 ? 'Peenya, Bengaluru' : 'Hosur Road, Bengaluru');
+      const labelText = d.name || (isW1 ? 'Peenya Industrial Area' : 'Hosur Road Logistics Hub');
 
       const icon = L.divIcon({
         className: 'custom-leaflet-div-icon',
@@ -102,26 +160,26 @@ export function FleetMap({
             <div style="background: ${depotBg}; color: white; border: 2px solid white; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.5); white-space: nowrap;">
               Depot ${d.id}
             </div>
-            <div style="font-size: 9px; color: #1e293b; background: rgba(255,255,255,0.9); padding: 1px 4px; border-radius: 3px; margin-top: 1px; font-weight: 600; white-space: nowrap;">
+            <div style="font-size: 9px; color: #1e293b; background: rgba(255,255,255,0.95); padding: 1px 5px; border-radius: 3px; margin-top: 1px; font-weight: 600; white-space: nowrap;">
               ${labelText}
             </div>
           </div>
         `,
-        iconSize: [100, 40],
-        iconAnchor: [50, 20]
+        iconSize: [110, 42],
+        iconAnchor: [55, 21]
       });
 
       const marker = L.marker(latLng, { icon }).addTo(group);
       marker.bindPopup(`
         <div style="font-family: var(--font-sans); font-size: 12px; line-height: 1.4;">
           <strong style="color: ${depotBg}; font-size: 13px;">Depot ${d.id}: ${d.name || ''}</strong><br/>
-          <span style="color: #64748b;">City: Bengaluru, Karnataka</span><br/>
+          <span style="color: #64748b;">Region: Bengaluru, Karnataka</span><br/>
           <span>Coordinates: [${d.latitude.toFixed(4)}, ${d.longitude.toFixed(4)}]</span>
         </div>
       `);
     });
 
-    // 2. Draw Customers
+    // 2. Draw Customer Destination Pins
     (customers || []).forEach((c, idx) => {
       if (!c || !c.latitude || !c.longitude) return;
       const latLng = [c.latitude, c.longitude];
@@ -134,12 +192,17 @@ export function FleetMap({
       const icon = L.divIcon({
         className: 'custom-leaflet-div-icon',
         html: `
-          <div class="custom-customer-pin" style="width: 24px; height: 24px; background-color: ${isCancelled ? '#64748b' : color}; ${isCancelled ? 'opacity: 0.5; text-decoration: line-through;' : ''}">
-            ${displayNum}
+          <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+            <div class="custom-customer-pin" style="width: 24px; height: 24px; background-color: ${isCancelled ? '#64748b' : color}; ${isCancelled ? 'opacity: 0.5; text-decoration: line-through;' : ''}">
+              ${displayNum}
+            </div>
+            <div style="font-size: 9px; color: #0f172a; background: rgba(255,255,255,0.92); padding: 1px 4px; border-radius: 3px; margin-top: 1px; font-weight: 600; white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis;">
+              ${c.name ? c.name.split(',')[0] : `Dest ${displayNum}`}
+            </div>
           </div>
         `,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
+        iconSize: [90, 42],
+        iconAnchor: [45, 12]
       });
 
       const marker = L.marker(latLng, { icon }).addTo(group);
@@ -153,66 +216,53 @@ export function FleetMap({
       `);
     });
 
-    // 3. Draw Optimization Vehicle Routes
-    if (optimization && optimization.vehicleRoutes && Array.isArray(optimization.vehicleRoutes)) {
-      optimization.vehicleRoutes.forEach((vr, vIdx) => {
-        if (!vr) return;
-        const isSelected = !selectedVehicleId || selectedVehicleId === vr.vehicleId;
-        const color = getVehicleColor(vIdx);
+    // 3. Draw Actual OSRM Road-Following Polylines & Moving Truck Markers
+    const vehicleKeys = Object.keys(roadGeometries);
+    vehicleKeys.forEach((vId, vIdx) => {
+      const roadCoords = roadGeometries[vId];
+      if (!roadCoords || roadCoords.length < 2) return;
 
-        const depotId = vr.homeDepotId || vr.depotId || 'W1';
-        const homeDepot = depotMap.get(depotId) || (depots.length > 0 ? depots[0] : null);
-        if (!homeDepot || !homeDepot.latitude) return;
+      const isSelected = !selectedVehicleId || selectedVehicleId === vId;
+      const color = getVehicleColor(vIdx);
 
-        const routeCoords = [[homeDepot.latitude, homeDepot.longitude]];
+      // Extend bounds with road points
+      roadCoords.forEach(pt => bounds.extend(pt));
 
-        // Extract customer stops from either `stops` or `customerSequence`
-        const stopIds = vr.customerSequence || (vr.stops ? vr.stops.map(s => s.customerId || s.id) : []);
-        stopIds.forEach(cId => {
-          const cust = customerMap.get(cId);
-          if (cust && cust.latitude && cust.longitude) {
-            routeCoords.push([cust.latitude, cust.longitude]);
-          }
-        });
-        routeCoords.push([homeDepot.latitude, homeDepot.longitude]);
+      // Draw real road polyline
+      const polyline = L.polyline(roadCoords, {
+        color: color,
+        weight: isSelected ? 4 : 2,
+        opacity: isSelected ? 0.95 : 0.2,
+        lineJoin: 'round',
+        smoothFactor: 1.0,
+        dashArray: isSelected ? null : '4, 8'
+      }).addTo(group);
 
-        // Draw Polyline
-        if (routeCoords.length > 1) {
-          const polyline = L.polyline(routeCoords, {
-            color: color,
-            weight: isSelected ? 4 : 2,
-            opacity: isSelected ? 0.9 : 0.25,
-            lineJoin: 'round',
-            dashArray: isSelected ? null : '4, 8'
-          }).addTo(group);
-
-          polyline.on('click', () => {
-            if (onSelectVehicle) onSelectVehicle(vr.vehicleId);
-          });
-
-          polyline.bindTooltip(`
-            <strong>Vehicle ${vr.vehicleId}</strong> (${stopIds.length} stops)<br/>
-            Distance: ${vr.totalDistanceKm != null ? vr.totalDistanceKm.toFixed(1) : (vr.totalDistance != null ? vr.totalDistance.toFixed(1) : '--')} km
-          `, { sticky: true });
-
-          // Add truck marker along route center
-          if (routeCoords.length >= 2) {
-            const midIdx = Math.floor(routeCoords.length / 2);
-            const midCoord = routeCoords[midIdx];
-
-            const truckIcon = L.divIcon({
-              className: 'custom-leaflet-div-icon',
-              html: `<div style="font-size: 16px; transform: scaleX(-1); text-shadow: 0 0 6px ${color};">🚚</div>`,
-              iconSize: [20, 20],
-              iconAnchor: [10, 10]
-            });
-            L.marker(midCoord, { icon: truckIcon }).addTo(group);
-          }
-        }
+      polyline.on('click', () => {
+        if (onSelectVehicle) onSelectVehicle(vId);
       });
-    }
 
-    // 4. Draw User's Real Location Marker
+      polyline.bindTooltip(`
+        <strong>Vehicle ${vId}</strong> (OSRM Road-Following Route)<br/>
+        Road Points: ${roadCoords.length} curve segments
+      `, { sticky: true });
+
+      // Place moving truck marker at midpoint along the actual road path
+      if (roadCoords.length >= 2) {
+        const midIdx = Math.floor(roadCoords.length / 2);
+        const midPoint = roadCoords[midIdx];
+
+        const truckIcon = L.divIcon({
+          className: 'custom-leaflet-div-icon',
+          html: `<div style="font-size: 17px; transform: scaleX(-1); filter: drop-shadow(0 0 4px ${color});">🚚</div>`,
+          iconSize: [22, 22],
+          iconAnchor: [11, 11]
+        });
+        L.marker(midPoint, { icon: truckIcon }).addTo(group);
+      }
+    });
+
+    // 4. Draw User's Real GPS Location Marker
     if (userLocation && userLocation.latitude && userLocation.longitude) {
       const userLatLng = [userLocation.latitude, userLocation.longitude];
       bounds.extend(userLatLng);
@@ -245,26 +295,30 @@ export function FleetMap({
       `);
     }
 
-    // Fit bounds if we have valid points
+    // Fit bounds safely
     try {
       if (bounds.isValid() && bounds.getNorthEast() && bounds.getSouthWest()) {
-        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 13 });
+        map.fitBounds(bounds, { padding: [35, 35], maxZoom: 13 });
       }
     } catch (e) {
       // ignore
     }
-  }, [depots, customers, optimization, userLocation, selectedVehicleId, onSelectVehicle]);
+  }, [depots, customers, roadGeometries, userLocation, selectedVehicleId, onSelectVehicle]);
 
-  // Google Maps link from first depot or center
   const gmapUrl = (depots && depots.length > 0 && depots[0].latitude)
     ? `https://www.google.com/maps/search/?api=1&query=${depots[0].latitude},${depots[0].longitude}`
     : `https://www.google.com/maps/search/?api=1&query=${BENGALURU_CENTER[0]},${BENGALURU_CENTER[1]}`;
 
   return (
     <div className="map-wrapper">
-      {/* OSRM Routing Banner */}
+      {/* OSRM Routing Banner & Status */}
       <div className="map-routing-banner">
         Routing: <span>OSRMRoutingProvider</span> [https://router.project-osrm.org]
+        {isLoadingGeometry && (
+          <span style={{ color: '#fbbf24', marginLeft: '8px' }}>
+            ⚡ Fetching real OSRM road geometry...
+          </span>
+        )}
       </div>
 
       <div ref={mapContainerRef} className="map-container" />
@@ -288,7 +342,15 @@ export function FleetMap({
         </div>
         <div className="legend-item">
           <span style={{ color: '#8b5cf6', fontWeight: 'bold' }}>━</span>
-          <span>Vehicle Route</span>
+          <span>Vehicle Route (V1)</span>
+        </div>
+        <div className="legend-item">
+          <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>━</span>
+          <span>Vehicle Route (V2)</span>
+        </div>
+        <div className="legend-item">
+          <span style={{ color: '#10b981', fontWeight: 'bold' }}>━</span>
+          <span>Vehicle Route (V3)</span>
         </div>
         <div className="legend-item">
           <span>🔘</span> <span>My Location</span>

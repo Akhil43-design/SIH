@@ -180,6 +180,38 @@ export async function updateTraffic(trafficUpdate) {
   return handleResponse(res);
 }
 
+// OSRM Multi-Stop Road Geometry Service with In-Memory Caching
+const osrmGeometryCache = new Map();
+
+export async function fetchOSRMRouteGeometry(waypoints) {
+  if (!waypoints || waypoints.length < 2) return [];
+
+  const key = waypoints.map(([lat, lng]) => `${Number(lat).toFixed(6)},${Number(lng).toFixed(6)}`).join(';');
+  if (osrmGeometryCache.has(key)) {
+    return osrmGeometryCache.get(key);
+  }
+
+  const coordsString = waypoints.map(([lat, lng]) => `${Number(lng).toFixed(6)},${Number(lat).toFixed(6)}`).join(';');
+  const url = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`OSRM HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+      const geojsonCoords = data.routes[0].geometry.coordinates; // [[lon, lat], ...]
+      const leafletCoords = geojsonCoords.map(([lon, lat]) => [lat, lon]);
+      osrmGeometryCache.set(key, leafletCoords);
+      return leafletCoords;
+    }
+  } catch (err) {
+    console.warn('OSRM road geometry fetch note:', err.message);
+  }
+
+  // Fallback to direct waypoint polyline
+  return waypoints;
+}
+
 export const api = {
   getHealth,
   getCustomers,
@@ -201,7 +233,8 @@ export const api = {
   getOptimizationHistory,
   getOptimizationResult,
   reoptimizePlan,
-  updateTraffic
+  updateTraffic,
+  fetchOSRMRouteGeometry
 };
 
 export default api;
