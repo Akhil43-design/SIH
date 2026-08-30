@@ -98,6 +98,24 @@ public class MultiVehicleQIGAOptimizer {
         this(populationSize, customers, vehicles, depot, network, trafficModel, fitnessFunction, 0.05, 0.20, null);
     }
 
+    public MultiVehicleQIGAOptimizer(
+            int populationSize,
+            List<Customer> customers,
+            List<Vehicle> vehicles,
+            List<Location> depots,
+            RoadNetwork network,
+            TrafficModel trafficModel,
+            FleetFitnessFunction fitnessFunction,
+            double learningRate,
+            double explorationRate,
+            Long seed) {
+
+        this(populationSize, customers, vehicles,
+                (depots != null && !depots.isEmpty()) ? depots.get(0)
+                        : (vehicles != null && !vehicles.isEmpty() && vehicles.get(0).getCurrentLocation() != null ? vehicles.get(0).getCurrentLocation() : new Location("W", "Depot")),
+                network, trafficModel, fitnessFunction, learningRate, explorationRate, seed);
+    }
+
     public FleetRoutePlan optimize(int generations) {
         long startTime = System.nanoTime();
 

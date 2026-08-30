@@ -80,7 +80,7 @@ public class VehicleRoute {
 
             route.addRoad(road);
             totalDistance += road.getDistance();
-            double travelTime = trafficModel.calculateAdjustedTravelTime(road);
+            double travelTime = trafficModel.calculateAdjustedTravelTime(road, currentTime);
             totalTravelTime += travelTime;
             totalFuel += road.getFuelConsumption() * (vehicle.getFuelConsumptionRate() / 0.12);
 
@@ -112,7 +112,7 @@ public class VehicleRoute {
 
         route.addRoad(returnRoad);
         totalDistance += returnRoad.getDistance();
-        double returnTravelTime = trafficModel.calculateAdjustedTravelTime(returnRoad);
+        double returnTravelTime = trafficModel.calculateAdjustedTravelTime(returnRoad, currentTime);
         totalTravelTime += returnTravelTime;
         totalFuel += returnRoad.getFuelConsumption() * (vehicle.getFuelConsumptionRate() / 0.12);
         currentTime += returnTravelTime;

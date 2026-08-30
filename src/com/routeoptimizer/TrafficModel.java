@@ -31,4 +31,8 @@ public class TrafficModel {
     public double calculateAdjustedTravelTime(Road road) {
         return calculateAdjustedTravelTime(road, defaultCondition);
     }
+
+    public double calculateAdjustedTravelTime(Road road, double departureTimeMinutes) {
+        return calculateAdjustedTravelTime(road);
+    }
 }

@@ -225,8 +225,10 @@ public class MultiVehicleLocalImprover {
 
         List<VehicleRoute> vRoutes = new ArrayList<>(vehicles.size());
         for (int v = 0; v < vehicles.size(); v++) {
+            Vehicle vehicle = vehicles.get(v);
+            Location vehicleDepot = (vehicle.getCurrentLocation() != null) ? vehicle.getCurrentLocation() : depot;
             List<Customer> cList = assignment.getOrDefault(v, new ArrayList<>());
-            vRoutes.add(new VehicleRoute(vehicles.get(v), cList, depot, network, trafficModel));
+            vRoutes.add(new VehicleRoute(vehicle, cList, vehicleDepot, network, trafficModel));
         }
 
         return new FleetRoutePlan(depot, vRoutes, allCustomers, fitnessFunction);
