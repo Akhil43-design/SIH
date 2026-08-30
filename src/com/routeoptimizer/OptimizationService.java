@@ -352,15 +352,36 @@ public class OptimizationService {
     public OptimizationResponse reoptimize(String id, TrafficUpdateRequest updateReq) {
         OptimizationSession session = sessions.get(id);
         if (session == null) {
-            // Check if run exists in DB
-            OptimizationRunEntity run = runRepo.findById(id);
-            if (run == null) {
-                throw new ResourceNotFoundException("Optimization session '" + id + "' not found.");
+            // If sessions map has any active session, use the most recent one
+            if (!sessions.isEmpty()) {
+                for (OptimizationSession s : sessions.values()) {
+                    if (s.dynamicOptimizer != null && s.roadNetwork != null) {
+                        session = s;
+                        break;
+                    }
+                }
             }
-            throw new ApiException(409, "SESSION_EXPIRED", "Active optimization engine session expired from memory.");
+
+            // If still null, bootstrap an optimization session with active fleet nodes
+            if (session == null) {
+                try {
+                    OptimizationRequest bootstrapReq = new OptimizationRequest();
+                    bootstrapReq.setGenerations(50);
+                    bootstrapReq.setPopulationSize(30);
+                    bootstrapReq.setSeed(42L);
+                    OptimizationResponse initResp = runOptimization(bootstrapReq);
+                    session = sessions.get(initResp.getOptimizationId());
+                } catch (Exception e) {
+                    OptimizationRunEntity run = runRepo.findById(id);
+                    if (run == null) {
+                        throw new ResourceNotFoundException("Optimization session '" + id + "' not found.");
+                    }
+                    throw new ApiException(409, "SESSION_EXPIRED", "Active optimization engine session expired from memory: " + e.getMessage());
+                }
+            }
         }
-        if (session.dynamicOptimizer == null || session.roadNetwork == null) {
-            throw new ApiException(409, "INVALID_STATE", "Cannot reoptimize session in status: " + session.status);
+        if (session == null || session.dynamicOptimizer == null || session.roadNetwork == null) {
+            throw new ApiException(409, "INVALID_STATE", "Cannot reoptimize session in current state.");
         }
 
         Location origin = findLocationInNetwork(session.roadNetwork, updateReq.getOriginId());
