@@ -3,8 +3,8 @@ import L from 'leaflet';
 import { BENGALURU_CENTER, getVehicleColor, PRIORITY_COLORS, formatTime } from '../utils/constants';
 
 export function FleetMap({
-  depots,
-  customers,
+  depots = [],
+  customers = [],
   optimization,
   userLocation,
   selectedVehicleId,
@@ -18,26 +18,36 @@ export function FleetMap({
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    if (!mapInstanceRef.current) {
-      const map = L.map(mapContainerRef.current, {
-        center: BENGALURU_CENTER,
-        zoom: 11,
-        attributionControl: false
-      });
+    let map = mapInstanceRef.current;
+    if (!map) {
+      try {
+        map = L.map(mapContainerRef.current, {
+          center: BENGALURU_CENTER,
+          zoom: 11,
+          attributionControl: false
+        });
 
-      // CartoDB Voyager Map Tiles with rich Indian landmark labels
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        subdomains: 'abcd'
-      }).addTo(map);
+        // CartoDB Voyager Map Tiles with rich Indian landmark labels
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19,
+          subdomains: 'abcd'
+        }).addTo(map);
 
-      layersGroupRef.current = L.featureGroup().addTo(map);
-      mapInstanceRef.current = map;
+        layersGroupRef.current = L.featureGroup().addTo(map);
+        mapInstanceRef.current = map;
+      } catch (e) {
+        console.warn('Map initialization:', e);
+      }
     }
 
     return () => {
+      // Map cleanup on unmount
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
+        try {
+          mapInstanceRef.current.remove();
+        } catch (e) {
+          // ignore
+        }
         mapInstanceRef.current = null;
       }
     };
@@ -49,28 +59,35 @@ export function FleetMap({
     const group = layersGroupRef.current;
     if (!map || !group) return;
 
-    group.clearLayers();
+    try {
+      group.clearLayers();
+    } catch (e) {
+      return;
+    }
+
     const bounds = L.latLngBounds([]);
 
     // Map depot lookup
     const depotMap = new Map();
     (depots || []).forEach(d => {
-      if (d.latitude && d.longitude) {
+      if (d && d.latitude && d.longitude) {
         depotMap.set(d.id, d);
+        if (d.depotId) depotMap.set(d.depotId, d);
       }
     });
 
     // Map customer lookup
     const customerMap = new Map();
     (customers || []).forEach(c => {
-      if (c.latitude && c.longitude) {
+      if (c && c.latitude && c.longitude) {
         customerMap.set(c.id, c);
+        if (c.customerId) customerMap.set(c.customerId, c);
       }
     });
 
     // 1. Draw Depots
     (depots || []).forEach(d => {
-      if (!d.latitude || !d.longitude) return;
+      if (!d || !d.latitude || !d.longitude) return;
       const latLng = [d.latitude, d.longitude];
       bounds.extend(latLng);
 
@@ -79,7 +96,7 @@ export function FleetMap({
       const labelText = d.name || (isW1 ? 'Peenya, Bengaluru' : 'Hosur Road, Bengaluru');
 
       const icon = L.divIcon({
-        className: '',
+        className: 'custom-leaflet-div-icon',
         html: `
           <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
             <div style="background: ${depotBg}; color: white; border: 2px solid white; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.5); white-space: nowrap;">
@@ -106,7 +123,7 @@ export function FleetMap({
 
     // 2. Draw Customers
     (customers || []).forEach((c, idx) => {
-      if (!c.latitude || !c.longitude) return;
+      if (!c || !c.latitude || !c.longitude) return;
       const latLng = [c.latitude, c.longitude];
       bounds.extend(latLng);
 
@@ -115,7 +132,7 @@ export function FleetMap({
       const displayNum = (idx + 1);
 
       const icon = L.divIcon({
-        className: '',
+        className: 'custom-leaflet-div-icon',
         html: `
           <div class="custom-customer-pin" style="width: 24px; height: 24px; background-color: ${isCancelled ? '#64748b' : color}; ${isCancelled ? 'opacity: 0.5; text-decoration: line-through;' : ''}">
             ${displayNum}
@@ -129,26 +146,30 @@ export function FleetMap({
       marker.bindPopup(`
         <div style="font-family: var(--font-sans); font-size: 12px; line-height: 1.4;">
           <strong style="color: ${color}; font-size: 13px;">#${displayNum}: ${c.name || c.id}</strong><br/>
-          <span style="color: #64748b;">Priority: <strong>${c.priority}</strong></span><br/>
-          <span>Demand: <strong>${c.demandKg != null ? c.demandKg : c.demand} kg</strong></span><br/>
-          <span>Time Window: [${formatTime(c.earliestTimeMinutes || 30)} - ${formatTime(c.latestTimeMinutes || 180)}]</span><br/>
+          <span style="color: #64748b;">Priority: <strong>${c.priority || 'MEDIUM'}</strong></span><br/>
+          <span>Demand: <strong>${c.demandKg != null ? c.demandKg : (c.demand || 20.0)} kg</strong></span><br/>
           <span>Coordinates: [${c.latitude.toFixed(4)}, ${c.longitude.toFixed(4)}]</span>
         </div>
       `);
     });
 
     // 3. Draw Optimization Vehicle Routes
-    if (optimization && optimization.vehicleRoutes) {
+    if (optimization && optimization.vehicleRoutes && Array.isArray(optimization.vehicleRoutes)) {
       optimization.vehicleRoutes.forEach((vr, vIdx) => {
+        if (!vr) return;
         const isSelected = !selectedVehicleId || selectedVehicleId === vr.vehicleId;
         const color = getVehicleColor(vIdx);
 
-        const homeDepot = depotMap.get(vr.homeDepotId) || depots[0];
-        if (!homeDepot) return;
+        const depotId = vr.homeDepotId || vr.depotId || 'W1';
+        const homeDepot = depotMap.get(depotId) || (depots.length > 0 ? depots[0] : null);
+        if (!homeDepot || !homeDepot.latitude) return;
 
         const routeCoords = [[homeDepot.latitude, homeDepot.longitude]];
-        (vr.stops || []).forEach(stop => {
-          const cust = customerMap.get(stop.customerId);
+
+        // Extract customer stops from either `stops` or `customerSequence`
+        const stopIds = vr.customerSequence || (vr.stops ? vr.stops.map(s => s.customerId || s.id) : []);
+        stopIds.forEach(cId => {
+          const cust = customerMap.get(cId);
           if (cust && cust.latitude && cust.longitude) {
             routeCoords.push([cust.latitude, cust.longitude]);
           }
@@ -156,35 +177,37 @@ export function FleetMap({
         routeCoords.push([homeDepot.latitude, homeDepot.longitude]);
 
         // Draw Polyline
-        const polyline = L.polyline(routeCoords, {
-          color: color,
-          weight: isSelected ? 4 : 2,
-          opacity: isSelected ? 0.9 : 0.25,
-          lineJoin: 'round',
-          dashArray: isSelected ? null : '4, 8'
-        }).addTo(group);
+        if (routeCoords.length > 1) {
+          const polyline = L.polyline(routeCoords, {
+            color: color,
+            weight: isSelected ? 4 : 2,
+            opacity: isSelected ? 0.9 : 0.25,
+            lineJoin: 'round',
+            dashArray: isSelected ? null : '4, 8'
+          }).addTo(group);
 
-        polyline.on('click', () => {
-          if (onSelectVehicle) onSelectVehicle(vr.vehicleId);
-        });
-
-        polyline.bindTooltip(`
-          <strong>Vehicle ${vr.vehicleId}</strong> (${vr.stops ? vr.stops.length : 0} stops)<br/>
-          Distance: ${vr.totalDistanceKm ? vr.totalDistanceKm.toFixed(1) : '--'} km
-        `, { sticky: true });
-
-        // Add truck marker along route center
-        if (routeCoords.length >= 2) {
-          const midIdx = Math.floor(routeCoords.length / 2);
-          const midCoord = routeCoords[midIdx];
-
-          const truckIcon = L.divIcon({
-            className: '',
-            html: `<div style="font-size: 16px; transform: scaleX(-1); text-shadow: 0 0 6px ${color};">🚚</div>`,
-            iconSize: [20, 20],
-            iconAnchor: [10, 10]
+          polyline.on('click', () => {
+            if (onSelectVehicle) onSelectVehicle(vr.vehicleId);
           });
-          L.marker(midCoord, { icon: truckIcon }).addTo(group);
+
+          polyline.bindTooltip(`
+            <strong>Vehicle ${vr.vehicleId}</strong> (${stopIds.length} stops)<br/>
+            Distance: ${vr.totalDistanceKm != null ? vr.totalDistanceKm.toFixed(1) : (vr.totalDistance != null ? vr.totalDistance.toFixed(1) : '--')} km
+          `, { sticky: true });
+
+          // Add truck marker along route center
+          if (routeCoords.length >= 2) {
+            const midIdx = Math.floor(routeCoords.length / 2);
+            const midCoord = routeCoords[midIdx];
+
+            const truckIcon = L.divIcon({
+              className: 'custom-leaflet-div-icon',
+              html: `<div style="font-size: 16px; transform: scaleX(-1); text-shadow: 0 0 6px ${color};">🚚</div>`,
+              iconSize: [20, 20],
+              iconAnchor: [10, 10]
+            });
+            L.marker(midCoord, { icon: truckIcon }).addTo(group);
+          }
         }
       });
     }
@@ -195,7 +218,7 @@ export function FleetMap({
       bounds.extend(userLatLng);
 
       const locIcon = L.divIcon({
-        className: '',
+        className: 'custom-leaflet-div-icon',
         html: `
           <div style="display: flex; flex-direction: column; align-items: center;">
             <div class="my-location-pulse">
@@ -222,14 +245,18 @@ export function FleetMap({
       `);
     }
 
-    // Fit bounds if we have points
-    if (bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
+    // Fit bounds if we have valid points
+    try {
+      if (bounds.isValid() && bounds.getNorthEast() && bounds.getSouthWest()) {
+        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 13 });
+      }
+    } catch (e) {
+      // ignore
     }
-  }, [depots, customers, optimization, userLocation, selectedVehicleId]);
+  }, [depots, customers, optimization, userLocation, selectedVehicleId, onSelectVehicle]);
 
   // Google Maps link from first depot or center
-  const gmapUrl = depots && depots.length > 0
+  const gmapUrl = (depots && depots.length > 0 && depots[0].latitude)
     ? `https://www.google.com/maps/search/?api=1&query=${depots[0].latitude},${depots[0].longitude}`
     : `https://www.google.com/maps/search/?api=1&query=${BENGALURU_CENTER[0]},${BENGALURU_CENTER[1]}`;
 
