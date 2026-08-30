@@ -243,4 +243,50 @@ public class RestApiServer {
     public TrafficController getTrafficController() { return trafficController; }
     public OptimizationController getOptimizationController() { return optimizationController; }
     public HealthController getHealthController() { return healthController; }
+
+    public static void main(String[] args) {
+        int port = 8080;
+        if (args.length > 0) {
+            try {
+                port = Integer.parseInt(args[0]);
+            } catch (NumberFormatException ignored) {}
+        }
+
+        try {
+            ServerConfiguration config = new ServerConfiguration(port, "*", "REAL_OSRM", "SIMULATED");
+            DatabaseManager db = new DatabaseManager();
+            RestApiServer server = new RestApiServer(config, db);
+
+            // Pre-seed sample Bengaluru Indian multi-depot fleet if database is fresh
+            if (server.getFleetService().getDepotRepo().findAll().isEmpty()) {
+                System.out.println("Initializing sample Bengaluru Indian multi-depot fleet...");
+                server.getDepotController().createDepot(new DepotDto("W1", "Peenya Industrial Area, Bengaluru", 12.9978, 77.5587));
+                server.getDepotController().createDepot(new DepotDto("W2", "Hosur Road Logistics Hub, Bengaluru", 12.8769, 77.6308));
+
+                server.getVehicleController().createVehicle(new VehicleDto("V1", 80.0, "W1", 0.12, 10.0));
+                server.getVehicleController().createVehicle(new VehicleDto("V2", 80.0, "W1", 0.12, 10.0));
+                server.getVehicleController().createVehicle(new VehicleDto("V3", 90.0, "W2", 0.12, 10.0));
+
+                server.getCustomerController().createCustomer(new CustomerDto("C1", "Manyata Tech Park, Nagavara", 13.0475, 77.6200, 20.0, "HIGH", 5.0, 30.0, 180.0));
+                server.getCustomerController().createCustomer(new CustomerDto("C2", "Phoenix Marketcity, Whitefield", 12.9959, 77.6964, 15.0, "MEDIUM", 5.0, 30.0, 240.0));
+                server.getCustomerController().createCustomer(new CustomerDto("C3", "Rajajinagar Industrial Area", 12.9880, 77.5540, 20.0, "HIGH", 5.0, 60.0, 300.0));
+                server.getCustomerController().createCustomer(new CustomerDto("C4", "Koramangala Commercial Hub", 12.9352, 77.6245, 25.0, "MEDIUM", 5.0, 45.0, 240.0));
+                server.getCustomerController().createCustomer(new CustomerDto("C5", "Electronic City Phase 1", 12.8452, 77.6602, 30.0, "LOW", 5.0, 60.0, 360.0));
+                server.getCustomerController().createCustomer(new CustomerDto("C6", "Indiranagar 100 Feet Road", 12.9784, 77.6408, 15.0, "HIGH", 5.0, 30.0, 180.0));
+                server.getCustomerController().createCustomer(new CustomerDto("C7", "Jayanagar 4th Block", 12.9299, 77.5824, 35.0, "MEDIUM", 5.0, 90.0, 420.0));
+                server.getCustomerController().createCustomer(new CustomerDto("C8", "Marathahalli Junction", 12.9591, 77.6974, 20.0, "LOW", 5.0, 60.0, 360.0));
+            }
+
+            server.start();
+            System.out.println("=================================================");
+            System.out.println("⚡ QuantumRouteOptimizer REST API Backend Online");
+            System.out.println("   Local URL: http://localhost:" + port);
+            System.out.println("   Health:    http://localhost:" + port + "/api/v1/health");
+            System.out.println("=================================================");
+
+        } catch (Exception e) {
+            System.err.println("Failed to start server: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

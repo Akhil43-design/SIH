@@ -1,34 +1,41 @@
 import React from 'react';
 
-export function TrafficPanel({ health, onOpenTrafficModal }) {
+export function TrafficPanel({ health, trafficSnapshot, onOpenTrafficModal }) {
+  const isLive = trafficSnapshot && trafficSnapshot.isLive;
+  const providerLabel = isLive ? 'TomTom Flow Segment API' : 'Diurnal Congestion Curves';
+  const routingEngine = (health && health.routingMode) ? health.routingMode : 'REAL_OSRM';
+
   return (
     <div className="panel-card">
-      <div className="card-header" style={{ margin: '-16px -16px 14px -16px', borderRadius: '12px 12px 0 0' }}>
-        <h2>🚦 Intelligent Traffic Model</h2>
-        <span className="badge badge-medium">
-          {health?.trafficMode || 'SIMULATED'}
+      <div className="panel-header">
+        <span className="panel-title">
+          <span>🚦</span> Intelligent Traffic Model
+        </span>
+        <span className={`badge-tag ${isLive ? 'live' : 'simulated'}`}>
+          {isLive ? 'LIVE' : 'SIMULATED'}
         </span>
       </div>
 
-      <div style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '10px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>Provider Source:</span>
-          <strong>{health?.trafficMode === 'LIVE' ? 'TomTom Live Traffic' : 'Diurnal Congestion Curves'}</strong>
+          <span style={{ color: 'var(--text-muted)' }}>Provider Source:</span>
+          <span style={{ color: '#f8fafc', fontWeight: '500' }}>{providerLabel}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>Routing Engine:</span>
-          <strong>{health?.routingMode || 'OSRM Real Road Network'}</strong>
+          <span style={{ color: 'var(--text-muted)' }}>Routing Engine:</span>
+          <span style={{ color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>{routingEngine}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>Dynamic Rerouting:</span>
-          <span style={{ color: 'var(--accent-emerald)', fontWeight: '700' }}>✓ Active & Audited</span>
+          <span style={{ color: 'var(--text-muted)' }}>Dynamic Rerouting:</span>
+          <span style={{ color: '#34d399', fontWeight: '600' }}>✓ Active & Audited</span>
         </div>
       </div>
 
       <button
-        className="btn btn-cyan"
-        style={{ width: '100%', marginTop: '14px', padding: '10px' }}
+        className="btn btn-red"
+        style={{ width: '100%' }}
         onClick={onOpenTrafficModal}
+        title="Inject traffic congestion and re-evaluate routes in real time"
       >
         🚨 Simulate Sudden Congestion Surge
       </button>

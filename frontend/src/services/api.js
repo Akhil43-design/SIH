@@ -27,163 +27,181 @@ async function handleResponse(response) {
   return data;
 }
 
+// System Health
+export async function getHealth() {
+  const res = await fetch(`${API_BASE}/health`);
+  return handleResponse(res);
+}
+
+// Customers
+export async function getCustomers() {
+  const res = await fetch(`${API_BASE}/customers`);
+  return handleResponse(res);
+}
+
+export async function getCustomer(id) {
+  const res = await fetch(`${API_BASE}/customers/${encodeURIComponent(id)}`);
+  return handleResponse(res);
+}
+
+export async function createCustomer(customer) {
+  const res = await fetch(`${API_BASE}/customers`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(customer)
+  });
+  return handleResponse(res);
+}
+
+export async function updateCustomer(id, customer) {
+  const res = await fetch(`${API_BASE}/customers/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(customer)
+  });
+  return handleResponse(res);
+}
+
+export async function deleteCustomer(id) {
+  const res = await fetch(`${API_BASE}/customers/${encodeURIComponent(id)}`, {
+    method: 'DELETE'
+  });
+  return handleResponse(res);
+}
+
+// Vehicles
+export async function getVehicles() {
+  const res = await fetch(`${API_BASE}/vehicles`);
+  return handleResponse(res);
+}
+
+export async function getVehicle(id) {
+  const res = await fetch(`${API_BASE}/vehicles/${encodeURIComponent(id)}`);
+  return handleResponse(res);
+}
+
+export async function createVehicle(vehicle) {
+  const res = await fetch(`${API_BASE}/vehicles`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(vehicle)
+  });
+  return handleResponse(res);
+}
+
+export async function updateVehicle(id, vehicle) {
+  const res = await fetch(`${API_BASE}/vehicles/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(vehicle)
+  });
+  return handleResponse(res);
+}
+
+export async function deleteVehicle(id) {
+  const res = await fetch(`${API_BASE}/vehicles/${encodeURIComponent(id)}`, {
+    method: 'DELETE'
+  });
+  return handleResponse(res);
+}
+
+// Depots
+export async function getDepots() {
+  const res = await fetch(`${API_BASE}/depots`);
+  return handleResponse(res);
+}
+
+export async function getDepot(id) {
+  const res = await fetch(`${API_BASE}/depots/${encodeURIComponent(id)}`);
+  return handleResponse(res);
+}
+
+export async function createDepot(depot) {
+  const res = await fetch(`${API_BASE}/depots`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(depot)
+  });
+  return handleResponse(res);
+}
+
+export async function updateDepot(id, depot) {
+  const res = await fetch(`${API_BASE}/depots/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(depot)
+  });
+  return handleResponse(res);
+}
+
+export async function deleteDepot(id) {
+  const res = await fetch(`${API_BASE}/depots/${encodeURIComponent(id)}`, {
+    method: 'DELETE'
+  });
+  return handleResponse(res);
+}
+
+// Optimization Runs & Re-optimization
+export async function runOptimization(request) {
+  const res = await fetch(`${API_BASE}/optimization/run`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request)
+  });
+  return handleResponse(res);
+}
+
+export async function getOptimizationHistory() {
+  const res = await fetch(`${API_BASE}/optimization`);
+  return handleResponse(res);
+}
+
+export async function getOptimizationResult(id) {
+  const res = await fetch(`${API_BASE}/optimization/${encodeURIComponent(id)}`);
+  return handleResponse(res);
+}
+
+export async function reoptimizePlan(id, trafficUpdate) {
+  const res = await fetch(`${API_BASE}/optimization/${encodeURIComponent(id)}/reoptimize`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(trafficUpdate)
+  });
+  return handleResponse(res);
+}
+
+// Traffic Updates & Status
+export async function updateTraffic(trafficUpdate) {
+  const res = await fetch(`${API_BASE}/traffic/update`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(trafficUpdate)
+  });
+  return handleResponse(res);
+}
+
 export const api = {
-  // System Health
-  async getHealth() {
-    const res = await fetch(`${API_BASE}/health`);
-    return handleResponse(res);
-  },
-
-  // Customers
-  async getCustomers() {
-    const res = await fetch(`${API_BASE}/customers`);
-    return handleResponse(res);
-  },
-
-  async getCustomer(id) {
-    const res = await fetch(`${API_BASE}/customers/${encodeURIComponent(id)}`);
-    return handleResponse(res);
-  },
-
-  async createCustomer(customer) {
-    const res = await fetch(`${API_BASE}/customers`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(customer)
-    });
-    return handleResponse(res);
-  },
-
-  async updateCustomer(id, customer) {
-    const res = await fetch(`${API_BASE}/customers/${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(customer)
-    });
-    return handleResponse(res);
-  },
-
-  async deleteCustomer(id) {
-    const res = await fetch(`${API_BASE}/customers/${encodeURIComponent(id)}`, {
-      method: 'DELETE'
-    });
-    return handleResponse(res);
-  },
-
-  // Vehicles
-  async getVehicles() {
-    const res = await fetch(`${API_BASE}/vehicles`);
-    return handleResponse(res);
-  },
-
-  async getVehicle(id) {
-    const res = await fetch(`${API_BASE}/vehicles/${encodeURIComponent(id)}`);
-    return handleResponse(res);
-  },
-
-  async createVehicle(vehicle) {
-    const res = await fetch(`${API_BASE}/vehicles`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(vehicle)
-    });
-    return handleResponse(res);
-  },
-
-  async updateVehicle(id, vehicle) {
-    const res = await fetch(`${API_BASE}/vehicles/${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(vehicle)
-    });
-    return handleResponse(res);
-  },
-
-  async deleteVehicle(id) {
-    const res = await fetch(`${API_BASE}/vehicles/${encodeURIComponent(id)}`, {
-      method: 'DELETE'
-    });
-    return handleResponse(res);
-  },
-
-  // Depots
-  async getDepots() {
-    const res = await fetch(`${API_BASE}/depots`);
-    return handleResponse(res);
-  },
-
-  async getDepot(id) {
-    const res = await fetch(`${API_BASE}/depots/${encodeURIComponent(id)}`);
-    return handleResponse(res);
-  },
-
-  async createDepot(depot) {
-    const res = await fetch(`${API_BASE}/depots`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(depot)
-    });
-    return handleResponse(res);
-  },
-
-  async updateDepot(id, depot) {
-    const res = await fetch(`${API_BASE}/depots/${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(depot)
-    });
-    return handleResponse(res);
-  },
-
-  async deleteDepot(id) {
-    const res = await fetch(`${API_BASE}/depots/${encodeURIComponent(id)}`, {
-      method: 'DELETE'
-    });
-    return handleResponse(res);
-  },
-
-  // Optimization
-  async runOptimization(request) {
-    const res = await fetch(`${API_BASE}/optimization/run`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request)
-    });
-    return handleResponse(res);
-  },
-
-  async getOptimization(id) {
-    const res = await fetch(`${API_BASE}/optimization/${encodeURIComponent(id)}`);
-    return handleResponse(res);
-  },
-
-  async getOptimizationHistory(status = null, limit = 50) {
-    let url = `${API_BASE}/optimization`;
-    const params = new URLSearchParams();
-    if (status) params.append('status', status);
-    if (limit) params.append('limit', limit);
-    if (params.toString()) url += `?${params.toString()}`;
-
-    const res = await fetch(url);
-    return handleResponse(res);
-  },
-
-  // Traffic
-  async updateTraffic(request) {
-    const res = await fetch(`${API_BASE}/traffic/update`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request)
-    });
-    return handleResponse(res);
-  },
-
-  async reoptimize(optimizationId, trafficUpdate) {
-    const res = await fetch(`${API_BASE}/optimization/${encodeURIComponent(optimizationId)}/reoptimize`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(trafficUpdate)
-    });
-    return handleResponse(res);
-  }
+  getHealth,
+  getCustomers,
+  getCustomer,
+  createCustomer,
+  updateCustomer,
+  deleteCustomer,
+  getVehicles,
+  getVehicle,
+  createVehicle,
+  updateVehicle,
+  deleteVehicle,
+  getDepots,
+  getDepot,
+  createDepot,
+  updateDepot,
+  deleteDepot,
+  runOptimization,
+  getOptimizationHistory,
+  getOptimizationResult,
+  reoptimizePlan,
+  updateTraffic
 };
+
+export default api;
