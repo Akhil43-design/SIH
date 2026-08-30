@@ -754,6 +754,42 @@ public class RepeatabilityTest {
         int toleranceSuccesses = 0;
 
 
+        int totalFirstBestGen = 0;
+
+        int minFirstBestGen =
+                Integer.MAX_VALUE;
+
+        int maxFirstBestGen =
+                Integer.MIN_VALUE;
+
+
+        int totalLastImprovementGen = 0;
+
+        int minLastImprovementGen =
+                Integer.MAX_VALUE;
+
+        int maxLastImprovementGen =
+                Integer.MIN_VALUE;
+
+
+        int totalFinalStagnation = 0;
+
+        int minFinalStagnation =
+                Integer.MAX_VALUE;
+
+        int maxFinalStagnation =
+                Integer.MIN_VALUE;
+
+
+        int totalRoutesEvaluatedAcrossRuns = 0;
+
+        int totalRoutesImprovedAcrossRuns = 0;
+
+        int totalImprovementsAcrossRuns = 0;
+
+        double totalCostImprovementAcrossRuns = 0.0;
+
+
         // ========================================
         // RUN QIGA
         // ========================================
@@ -998,6 +1034,66 @@ public class RepeatabilityTest {
             }
 
 
+            int firstBestGeneration =
+                    qiga.getFirstBestGeneration();
+
+            int lastImprovementGeneration =
+                    qiga.getLastImprovementGeneration();
+
+            int finalStagnation =
+                    GENERATIONS
+                            - lastImprovementGeneration;
+
+
+            totalFirstBestGen +=
+                    firstBestGeneration;
+
+            if (firstBestGeneration < minFirstBestGen) {
+                minFirstBestGen = firstBestGeneration;
+            }
+
+            if (firstBestGeneration > maxFirstBestGen) {
+                maxFirstBestGen = firstBestGeneration;
+            }
+
+
+            totalLastImprovementGen +=
+                    lastImprovementGeneration;
+
+            if (lastImprovementGeneration < minLastImprovementGen) {
+                minLastImprovementGen = lastImprovementGeneration;
+            }
+
+            if (lastImprovementGeneration > maxLastImprovementGen) {
+                maxLastImprovementGen = lastImprovementGeneration;
+            }
+
+
+            totalFinalStagnation +=
+                    finalStagnation;
+
+            if (finalStagnation < minFinalStagnation) {
+                minFinalStagnation = finalStagnation;
+            }
+
+            if (finalStagnation > maxFinalStagnation) {
+                maxFinalStagnation = finalStagnation;
+            }
+
+
+            totalRoutesEvaluatedAcrossRuns +=
+                    qiga.getTotalRoutesEvaluated();
+
+            totalRoutesImprovedAcrossRuns +=
+                    qiga.getRoutesImproved();
+
+            totalImprovementsAcrossRuns +=
+                    qiga.getTotalImprovements();
+
+            totalCostImprovementAcrossRuns +=
+                    qiga.getTotalCostImprovement();
+
+
             // ------------------------------------
             // RUN RESULT
             // ------------------------------------
@@ -1037,6 +1133,25 @@ public class RepeatabilityTest {
                             + withinTolerance
             );
 
+            System.out.println();
+
+            System.out.println(
+                    "First Best Generation: "
+                            + firstBestGeneration
+            );
+
+            System.out.println(
+                    "Last Improvement Generation: "
+                            + lastImprovementGeneration
+            );
+
+            System.out.println(
+                    "Final Stagnation: "
+                            + finalStagnation
+            );
+
+            System.out.println();
+
             System.out.println(
                     "Route: "
                             + qigaRoute
@@ -1071,6 +1186,31 @@ public class RepeatabilityTest {
                 ((double) exactMatches
                         / RUNS)
                         * 100.0;
+
+        double averageFirstBestGen =
+                (double) totalFirstBestGen
+                        / RUNS;
+
+        double averageLastImprovementGen =
+                (double) totalLastImprovementGen
+                        / RUNS;
+
+        double averageFinalStagnation =
+                (double) totalFinalStagnation
+                        / RUNS;
+
+        double overallImprovementRate =
+                totalRoutesEvaluatedAcrossRuns > 0
+                        ? ((double) totalRoutesImprovedAcrossRuns
+                                / totalRoutesEvaluatedAcrossRuns)
+                                * 100.0
+                        : 0.0;
+
+        double overallAverageImprovement =
+                totalRoutesImprovedAcrossRuns > 0
+                        ? totalCostImprovementAcrossRuns
+                                / totalRoutesImprovedAcrossRuns
+                        : 0.0;
 
 
         // ========================================
@@ -1312,6 +1452,114 @@ public class RepeatabilityTest {
             );
         }
 
+
+        System.out.println();
+
+        System.out.println(
+                "========================================"
+        );
+
+        System.out.println(
+                "       CONVERGENCE STATISTICS"
+        );
+
+        System.out.println(
+                "========================================"
+        );
+
+        System.out.println();
+
+        System.out.println(
+                "Average First Best Generation: "
+                        + averageFirstBestGen
+        );
+
+        System.out.println(
+                "Minimum First Best Generation: "
+                        + minFirstBestGen
+        );
+
+        System.out.println(
+                "Maximum First Best Generation: "
+                        + maxFirstBestGen
+        );
+
+        System.out.println();
+
+        System.out.println(
+                "Average Last Improvement Generation: "
+                        + averageLastImprovementGen
+        );
+
+        System.out.println(
+                "Minimum Last Improvement Generation: "
+                        + minLastImprovementGen
+        );
+
+        System.out.println(
+                "Maximum Last Improvement Generation: "
+                        + maxLastImprovementGen
+        );
+
+        System.out.println();
+
+        System.out.println(
+                "Average Final Stagnation: "
+                        + averageFinalStagnation
+        );
+
+        System.out.println(
+                "Minimum Final Stagnation: "
+                        + minFinalStagnation
+        );
+
+        System.out.println(
+                "Maximum Final Stagnation: "
+                        + maxFinalStagnation
+        );
+
+        System.out.println();
+
+        System.out.println(
+                "========================================"
+        );
+
+        System.out.println();
+
+        System.out.println(
+                "========================================"
+        );
+
+        System.out.println(
+                "       LOCAL SEARCH STATISTICS"
+        );
+
+        System.out.println(
+                "========================================"
+        );
+
+        System.out.println();
+
+        System.out.println(
+                "Routes Improved: "
+                        + totalRoutesImprovedAcrossRuns
+        );
+
+        System.out.println(
+                "Total Improvements: "
+                        + totalImprovementsAcrossRuns
+        );
+
+        System.out.println(
+                "Improvement Rate: "
+                        + overallImprovementRate
+                        + " %"
+        );
+
+        System.out.println(
+                "Average Improvement: "
+                        + overallAverageImprovement
+        );
 
         System.out.println();
 

@@ -26,6 +26,23 @@ public class QIGAOptimizer {
 
     private int generationsWithoutImprovement = 0;
 
+    private int firstBestGeneration = -1;
+
+    private int lastImprovementGeneration = -1;
+
+
+    // ============================================
+    // LOCAL SEARCH INFORMATION
+    // ============================================
+
+    private int totalRoutesEvaluated = 0;
+
+    private int routesImproved = 0;
+
+    private int totalImprovements = 0;
+
+    private double totalCostImprovement = 0.0;
+
 
     // ============================================
     // ADAPTIVE EXPLORATION PARAMETERS
@@ -169,6 +186,14 @@ public class QIGAOptimizer {
             );
         }
 
+        firstBestGeneration = -1;
+        lastImprovementGeneration = -1;
+
+        totalRoutesEvaluated = 0;
+        routesImproved = 0;
+        totalImprovements = 0;
+        totalCostImprovement = 0.0;
+
 
         /*
          * =========================================
@@ -230,7 +255,7 @@ public class QIGAOptimizer {
                 /*
                  * Generate a customer permutation.
                  */
-                List<Location> route =
+                List<Location> rawRoute =
                         QuantumPositionRouteGenerator
                                 .generateRoute(
                                         individual,
@@ -248,17 +273,48 @@ public class QIGAOptimizer {
                  */
                 Route completeRoute =
                         evaluator.buildRouteFromOrder(
-                                route
+                                rawRoute
                         );
 
 
                 /*
-                 * Calculate route cost.
+                 * Calculate initial route cost.
                  */
-                double cost =
+                double initialCost =
                         evaluator.calculateCost(
                                 completeRoute
                         );
+
+                totalRoutesEvaluated++;
+
+
+                /*
+                 * Apply lightweight local route improvement.
+                 */
+                LocalRouteImprover.ImprovementResult improvementResult =
+                        LocalRouteImprover.improveWithDetails(
+                                rawRoute,
+                                evaluator.getWarehouse(),
+                                evaluator.getNetwork(),
+                                evaluator.getFitnessFunction()
+                        );
+
+                List<Location> route =
+                        improvementResult.getRoute();
+
+                double cost =
+                        improvementResult.getCost();
+
+                if (cost < initialCost - 1e-9) {
+
+                    routesImproved++;
+
+                    totalImprovements +=
+                            improvementResult.getImprovementCount();
+
+                    totalCostImprovement +=
+                            (initialCost - cost);
+                }
 
 
                 /*
@@ -308,6 +364,12 @@ public class QIGAOptimizer {
             if (improved) {
 
                 generationsWithoutImprovement = 0;
+
+                if (firstBestGeneration == -1) {
+                    firstBestGeneration = generation;
+                }
+
+                lastImprovementGeneration = generation;
 
             } else {
 
@@ -556,5 +618,53 @@ public class QIGAOptimizer {
     public int getGenerationsWithoutImprovement() {
 
         return generationsWithoutImprovement;
+    }
+
+
+    // ============================================
+    // CONVERGENCE TRACKING GETTERS
+    // ============================================
+
+    public int getFirstBestGeneration() {
+        return firstBestGeneration;
+    }
+
+    public int getLastImprovementGeneration() {
+        return lastImprovementGeneration;
+    }
+
+
+    // ============================================
+    // LOCAL SEARCH GETTERS
+    // ============================================
+
+    public int getTotalRoutesEvaluated() {
+        return totalRoutesEvaluated;
+    }
+
+    public int getRoutesImproved() {
+        return routesImproved;
+    }
+
+    public int getTotalImprovements() {
+        return totalImprovements;
+    }
+
+    public double getTotalCostImprovement() {
+        return totalCostImprovement;
+    }
+
+    public double getImprovementRate() {
+        if (totalRoutesEvaluated == 0) {
+            return 0.0;
+        }
+        return ((double) routesImproved / totalRoutesEvaluated) * 100.0;
+    }
+
+    public double getAverageCostImprovement() {
+        if (routesImproved == 0) {
+            return 0.0;
+        }
+        return totalCostImprovement / routesImproved;
     }
 }
