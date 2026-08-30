@@ -19,6 +19,10 @@ public class VehicleDto {
         this.fixedCost = fixedCost;
     }
 
+    public VehicleDto(String id, Double capacity, String depotId) {
+        this(id, capacity, depotId, 0.12, 10.0);
+    }
+
     public void validate() {
         if (id == null || id.trim().isEmpty()) {
             throw new ValidationException("Vehicle ID must not be empty.");

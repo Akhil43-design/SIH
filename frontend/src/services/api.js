@@ -212,8 +212,24 @@ export async function fetchOSRMRouteGeometry(waypoints) {
   return waypoints;
 }
 
+export async function getCities() {
+  const res = await fetch(`${API_BASE_URL}/datasets/cities`);
+  return handleResponse(res);
+}
+
+export async function selectCityDataset(cityId) {
+  const res = await fetch(`${API_BASE_URL}/datasets/select`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cityId })
+  });
+  return handleResponse(res);
+}
+
 export const api = {
   getHealth,
+  getCities,
+  selectCityDataset,
   getCustomers,
   getCustomer,
   createCustomer,

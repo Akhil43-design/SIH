@@ -231,6 +231,35 @@ public class FleetManagementService {
         return customerRepo.deleteById(id);
     }
 
+    public IndianCityDatasets.CityDataset loadCityDataset(String cityId) {
+        IndianCityDatasets.CityDataset cityDataset = IndianCityDatasets.getCityDataset(cityId);
+        db.beginTransaction();
+        try {
+            // Clear in-memory maps under lock
+            db.customers.clear();
+            db.vehicles.clear();
+            db.depots.clear();
+
+            for (DepotDto d : cityDataset.getDepots()) {
+                depotRepo.save(DepotEntity.fromDto(d));
+            }
+
+            for (VehicleDto v : cityDataset.getVehicles()) {
+                vehicleRepo.save(VehicleEntity.fromDto(v));
+            }
+
+            for (CustomerDto c : cityDataset.getCustomers()) {
+                customerRepo.save(CustomerEntity.fromDto(c));
+            }
+
+            db.commit();
+            return cityDataset;
+        } catch (Exception e) {
+            db.rollback();
+            throw new ApiException(500, "DATASET_LOAD_FAILED", "Failed to load city dataset: " + e.getMessage());
+        }
+    }
+
     public void clearAll() {
         db.clearAll();
     }

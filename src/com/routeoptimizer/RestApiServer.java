@@ -192,6 +192,22 @@ public class RestApiServer {
                     String id = path.substring("/api/v1/optimization/".length());
                     OptimizationResponse resp = optimizationController.getOptimization(id);
                     responseJson = JsonUtils.toJson(resp);
+                } else if (path.equals("/api/v1/datasets/cities") && "GET".equalsIgnoreCase(method)) {
+                    responseJson = JsonUtils.toJson(IndianCityDatasets.getAllCities());
+                } else if (path.equals("/api/v1/datasets/select") && "POST".equalsIgnoreCase(method)) {
+                    String cityId = "bengaluru";
+                    if (body != null && body.contains("\"cityId\"")) {
+                        int start = body.indexOf("\"cityId\"") + 8;
+                        int q1 = body.indexOf("\"", start);
+                        if (q1 != -1) {
+                            int q2 = body.indexOf("\"", q1 + 1);
+                            if (q2 != -1) {
+                                cityId = body.substring(q1 + 1, q2);
+                            }
+                        }
+                    }
+                    IndianCityDatasets.CityDataset dataset = fleetService.loadCityDataset(cityId);
+                    responseJson = JsonUtils.toJson(dataset);
                 } else {
                     throw new ResourceNotFoundException("Endpoint not found: " + path);
                 }
@@ -219,16 +235,11 @@ public class RestApiServer {
         }
 
         private void sendJsonResponse(HttpExchange exchange, int statusCode, String responseJson) throws IOException {
-            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
             byte[] bytes = responseJson.getBytes(StandardCharsets.UTF_8);
-            if (statusCode == 204 || bytes.length == 0) {
-                exchange.sendResponseHeaders(statusCode, -1);
-            } else {
-                exchange.sendResponseHeaders(statusCode, bytes.length);
-                OutputStream os = exchange.getResponseBody();
+            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
+            exchange.sendResponseHeaders(statusCode, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
                 os.write(bytes);
-                os.flush();
-                os.close();
             }
         }
     }
@@ -260,21 +271,7 @@ public class RestApiServer {
             // Pre-seed sample Bengaluru Indian multi-depot fleet if database is fresh
             if (server.getFleetService().getDepotRepo().findAll().isEmpty()) {
                 System.out.println("Initializing sample Bengaluru Indian multi-depot fleet...");
-                server.getDepotController().createDepot(new DepotDto("W1", "Peenya Industrial Area, Bengaluru", 12.9978, 77.5587));
-                server.getDepotController().createDepot(new DepotDto("W2", "Hosur Road Logistics Hub, Bengaluru", 12.8769, 77.6308));
-
-                server.getVehicleController().createVehicle(new VehicleDto("V1", 80.0, "W1", 0.12, 10.0));
-                server.getVehicleController().createVehicle(new VehicleDto("V2", 80.0, "W1", 0.12, 10.0));
-                server.getVehicleController().createVehicle(new VehicleDto("V3", 90.0, "W2", 0.12, 10.0));
-
-                server.getCustomerController().createCustomer(new CustomerDto("C1", "Manyata Tech Park, Nagavara", 13.0475, 77.6200, 20.0, "HIGH", 5.0, 30.0, 180.0));
-                server.getCustomerController().createCustomer(new CustomerDto("C2", "Phoenix Marketcity, Whitefield", 12.9959, 77.6964, 15.0, "MEDIUM", 5.0, 30.0, 240.0));
-                server.getCustomerController().createCustomer(new CustomerDto("C3", "Rajajinagar Industrial Area", 12.9880, 77.5540, 20.0, "HIGH", 5.0, 60.0, 300.0));
-                server.getCustomerController().createCustomer(new CustomerDto("C4", "Koramangala Commercial Hub", 12.9352, 77.6245, 25.0, "MEDIUM", 5.0, 45.0, 240.0));
-                server.getCustomerController().createCustomer(new CustomerDto("C5", "Electronic City Phase 1", 12.8452, 77.6602, 30.0, "LOW", 5.0, 60.0, 360.0));
-                server.getCustomerController().createCustomer(new CustomerDto("C6", "Indiranagar 100 Feet Road", 12.9784, 77.6408, 15.0, "HIGH", 5.0, 30.0, 180.0));
-                server.getCustomerController().createCustomer(new CustomerDto("C7", "Jayanagar 4th Block", 12.9299, 77.5824, 35.0, "MEDIUM", 5.0, 90.0, 420.0));
-                server.getCustomerController().createCustomer(new CustomerDto("C8", "Marathahalli Junction", 12.9591, 77.6974, 20.0, "LOW", 5.0, 60.0, 360.0));
+                server.getFleetService().loadCityDataset("bengaluru");
             }
 
             server.start();

@@ -6,13 +6,14 @@ import {
   formatCurrencyINR,
   formatISTTime,
   formatISTDateTime,
-  BENGALURU_CENTER
+  BENGALURU_CENTER,
+  INDIAN_CITIES
 } from '../src/utils/constants.js';
 
 import { fetchOSRMRouteGeometry } from '../src/services/api.js';
 
 console.log('========================================');
-console.log('  PHASE 5C FRONTEND DASHBOARD TESTS');
+console.log('  PHASE 5D FRONTEND LOCALIZATION TESTS');
 console.log('========================================\n');
 
 let passed = 0;
@@ -51,17 +52,21 @@ async function runTests() {
   const istDateTime = formatISTDateTime(new Date());
   assert(istDateTime.includes('IST'), `formatISTDateTime contains 'IST': ${istDateTime}`);
 
-  // 5. Vehicle Colors & Types
+  // 5. Vehicle Colors & Localized Indian Types
   assert(getVehicleColor(0) === '#8b5cf6', 'getVehicleColor(0) -> Violet');
   assert(getVehicleColor(1) === '#3b82f6', 'getVehicleColor(1) -> Blue');
-  assert(getVehicleType('V1') === 'Mini Truck', 'getVehicleType(V1) -> Mini Truck');
-  assert(getVehicleType('V2') === 'Delivery Van', 'getVehicleType(V2) -> Delivery Van');
-  assert(getVehicleType('V3') === 'Light Commercial Vehicle', 'getVehicleType(V3) -> Light Commercial Vehicle');
+  assert(getVehicleType('V1') === 'Tata Ace Mini Truck', 'getVehicleType(V1) -> Tata Ace Mini Truck');
+  assert(getVehicleType('V2') === 'Mahindra Bolero Maxi Truck', 'getVehicleType(V2) -> Mahindra Bolero Maxi Truck');
+  assert(getVehicleType('V3') === 'Tata 407 LCV', 'getVehicleType(V3) -> Tata 407 LCV');
+  assert(getVehicleType('V4') === 'Ashok Leyland Dost', 'getVehicleType(V4) -> Ashok Leyland Dost');
 
-  // 6. Bengaluru Default Center Coordinates
+  // 6. Bengaluru Default Center Coordinates & City Database
   assert(Array.isArray(BENGALURU_CENTER) && BENGALURU_CENTER.length === 2, 'BENGALURU_CENTER is a [lat, lng] array');
   assert(Math.abs(BENGALURU_CENTER[0] - 12.9716) < 0.001, 'BENGALURU_CENTER Latitude is ~12.9716');
   assert(Math.abs(BENGALURU_CENTER[1] - 77.5946) < 0.001, 'BENGALURU_CENTER Longitude is ~77.5946');
+
+  assert(Array.isArray(INDIAN_CITIES) && INDIAN_CITIES.length === 10, 'INDIAN_CITIES contains 10 metropolitan logistics hubs');
+  assert(INDIAN_CITIES[0].id === 'bengaluru', 'Default primary city is Bengaluru');
 
   // 7. OSRM Road Geometry Multi-Stop Fetching
   const demoWaypoints = [

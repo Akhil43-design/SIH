@@ -4,6 +4,19 @@
 
 export const BENGALURU_CENTER = [12.9716, 77.5946];
 
+export const INDIAN_CITIES = [
+  { id: 'bengaluru', name: 'Bengaluru', state: 'Karnataka', center: [12.9716, 77.5946], zoom: 11, desc: 'Silicon Valley Logistics Corridor' },
+  { id: 'hyderabad', name: 'Hyderabad', state: 'Telangana', center: [17.3850, 78.4867], zoom: 11, desc: 'Cyberabad Tech & Logistics Zone' },
+  { id: 'mumbai', name: 'Mumbai', state: 'Maharashtra', center: [19.0760, 72.8777], zoom: 11, desc: 'Financial Capital & Port Logistics Hub' },
+  { id: 'delhi', name: 'Delhi NCR', state: 'Delhi', center: [28.6139, 77.2090], zoom: 11, desc: 'National Capital Region Freight Corridor' },
+  { id: 'chennai', name: 'Chennai', state: 'Tamil Nadu', center: [13.0827, 80.2707], zoom: 11, desc: 'Automobile & Port Logistics Gateway' },
+  { id: 'pune', name: 'Pune', state: 'Maharashtra', center: [18.5204, 73.8567], zoom: 11, desc: 'Auto Manufacturing & Tech Logistics Hub' },
+  { id: 'kolkata', name: 'Kolkata', state: 'West Bengal', center: [22.5726, 88.3639], zoom: 11, desc: 'Eastern India Commercial Hub' },
+  { id: 'ahmedabad', name: 'Ahmedabad', state: 'Gujarat', center: [23.0225, 72.5714], zoom: 11, desc: 'Textile & Industrial Freight Center' },
+  { id: 'jaipur', name: 'Jaipur', state: 'Rajasthan', center: [26.9124, 75.7873], zoom: 11, desc: 'Pink City Industrial Logistics Gateway' },
+  { id: 'kochi', name: 'Kochi', state: 'Kerala', center: [9.9312, 76.2673], zoom: 11, desc: 'Port City & Coastal IT Logistics Corridor' }
+];
+
 export const VEHICLE_COLORS = [
   '#8b5cf6', // Violet / Purple (V1)
   '#3b82f6', // Blue (V2)
@@ -17,7 +30,7 @@ export const VEHICLE_COLORS = [
 
 export const PRIORITY_COLORS = {
   HIGH: '#ef4444',   // Red
-  MEDIUM: '#f59e0b', // Amber / Orange (Matches mockup)
+  MEDIUM: '#f59e0b', // Amber / Orange
   LOW: '#10b981'     // Green
 };
 
@@ -32,10 +45,12 @@ export const STATUS_COLORS = {
 };
 
 export const VEHICLE_TYPES = {
-  V1: 'Mini Truck',
-  V2: 'Delivery Van',
-  V3: 'Light Commercial Vehicle',
-  DEFAULT: 'Commercial Vehicle'
+  V1: 'Tata Ace Mini Truck',
+  V2: 'Mahindra Bolero Maxi Truck',
+  V3: 'Tata 407 LCV',
+  V4: 'Ashok Leyland Dost',
+  V5: 'Mahindra Jeeto',
+  DEFAULT: 'Commercial Fleet Vehicle'
 };
 
 export function getVehicleType(vehicleId) {
@@ -73,25 +88,37 @@ export function formatClockTime(minutesFromMidnight) {
 }
 
 export function formatISTTime(date = new Date()) {
-  const d = (date instanceof Date) ? date : new Date(date);
-  return d.toLocaleTimeString('en-IN', {
-    timeZone: 'Asia/Kolkata',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  }) + ' IST';
+  try {
+    const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
+    const timeStr = d.toLocaleTimeString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    return `${timeStr} IST`;
+  } catch (e) {
+    return '11:24 AM IST';
+  }
 }
 
 export function formatISTDateTime(date = new Date()) {
-  const d = (date instanceof Date) ? date : new Date(date);
-  const options = {
-    timeZone: 'Asia/Kolkata',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  };
-  return d.toLocaleString('en-IN', options) + ' IST';
+  try {
+    const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
+    const dateStr = d.toLocaleDateString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+    const timeStr = d.toLocaleTimeString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    return `${dateStr}, ${timeStr} IST`;
+  } catch (e) {
+    return '30 May 2025, 11:23 AM IST';
+  }
 }

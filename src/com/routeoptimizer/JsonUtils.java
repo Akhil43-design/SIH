@@ -45,6 +45,19 @@ public class JsonUtils {
                     "{\"id\":\"%s\",\"name\":\"%s\",\"latitude\":%s,\"longitude\":%s}",
                     escape(d.getId()), escape(d.getName()), d.getLatitude(), d.getLongitude());
         }
+        if (obj instanceof IndianCityDatasets.CityInfo) {
+            IndianCityDatasets.CityInfo ci = (IndianCityDatasets.CityInfo) obj;
+            return String.format(Locale.US,
+                    "{\"id\":\"%s\",\"name\":\"%s\",\"state\":\"%s\",\"country\":\"%s\",\"centerLat\":%.4f,\"centerLng\":%.4f,\"zoom\":%d,\"description\":\"%s\"}",
+                    escape(ci.getId()), escape(ci.getName()), escape(ci.getState()), escape(ci.getCountry()),
+                    ci.getCenterLat(), ci.getCenterLng(), ci.getZoom(), escape(ci.getDescription()));
+        }
+        if (obj instanceof IndianCityDatasets.CityDataset) {
+            IndianCityDatasets.CityDataset cd = (IndianCityDatasets.CityDataset) obj;
+            return String.format(Locale.US,
+                    "{\"info\":%s,\"depots\":%s,\"vehicles\":%s,\"customers\":%s}",
+                    toJson(cd.getInfo()), toJson(cd.getDepots()), toJson(cd.getVehicles()), toJson(cd.getCustomers()));
+        }
         if (obj instanceof HealthResponse) {
             HealthResponse h = (HealthResponse) obj;
             return String.format(Locale.US,
