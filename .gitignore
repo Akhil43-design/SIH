@@ -13,3 +13,11 @@ out/
 # Database & Runtime artifacts
 *.dat
 *.db
+
+# Frontend dependencies & build output
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Backups
+backups/

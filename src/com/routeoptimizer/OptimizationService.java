@@ -62,6 +62,33 @@ public class OptimizationService {
         if (req == null) {
             throw new ValidationException("Optimization request must not be null.");
         }
+
+        // If request does not supply lists directly, load active entities from repositories
+        if (req.getCustomers() == null || req.getCustomers().isEmpty()) {
+            List<CustomerEntity> activeCusts = fleetService.getCustomerRepo().findAllActiveForOptimization();
+            if (activeCusts != null && !activeCusts.isEmpty()) {
+                List<CustomerDto> dtos = new ArrayList<>();
+                for (CustomerEntity c : activeCusts) dtos.add(c.toDto());
+                req.setCustomers(dtos);
+            }
+        }
+        if (req.getVehicles() == null || req.getVehicles().isEmpty()) {
+            List<VehicleEntity> vehs = fleetService.getVehicleRepo().findAll();
+            if (vehs != null && !vehs.isEmpty()) {
+                List<VehicleDto> dtos = new ArrayList<>();
+                for (VehicleEntity v : vehs) dtos.add(v.toDto());
+                req.setVehicles(dtos);
+            }
+        }
+        if (req.getDepots() == null || req.getDepots().isEmpty()) {
+            List<DepotEntity> deps = fleetService.getDepotRepo().findAll();
+            if (deps != null && !deps.isEmpty()) {
+                List<DepotDto> dtos = new ArrayList<>();
+                for (DepotEntity d : deps) dtos.add(d.toDto());
+                req.setDepots(dtos);
+            }
+        }
+
         req.validate();
 
         String optId = "opt-" + UUID.randomUUID().toString().substring(0, 8);
