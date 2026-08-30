@@ -52,6 +52,34 @@ public class JsonUtils {
                     escape(h.getStatus()), escape(h.getApplicationName()), escape(h.getVersion()),
                     escape(h.getRoutingMode()), escape(h.getTrafficMode()), h.getUptimeMs());
         }
+        if (obj instanceof OptimizationRunEntity) {
+            OptimizationRunEntity r = (OptimizationRunEntity) obj;
+            return String.format(Locale.US,
+                    "{\"id\":\"%s\",\"parentRunId\":%s,\"status\":\"%s\",\"startTime\":%d,\"completionTime\":%s,\"runtimeMs\":%s,\"routingMode\":\"%s\",\"trafficMode\":\"%s\",\"trafficProvider\":\"%s\",\"requestedCustomerCount\":%d,\"vehicleCount\":%d,\"depotCount\":%d,\"triggerEvent\":%s,\"errorMessage\":%s}",
+                    escape(r.getId()),
+                    r.getParentRunId() != null ? "\"" + escape(r.getParentRunId()) + "\"" : "null",
+                    escape(r.getStatus()),
+                    r.getStartTime(),
+                    r.getCompletionTime() != null ? String.valueOf(r.getCompletionTime()) : "null",
+                    r.getRuntimeMs() != null ? String.valueOf(r.getRuntimeMs()) : "null",
+                    escape(r.getRoutingMode()),
+                    escape(r.getTrafficMode()),
+                    escape(r.getTrafficProvider()),
+                    r.getRequestedCustomerCount(),
+                    r.getVehicleCount(),
+                    r.getDepotCount(),
+                    r.getTriggerEvent() != null ? "\"" + escape(r.getTriggerEvent()) + "\"" : "null",
+                    r.getErrorMessage() != null ? "\"" + escape(r.getErrorMessage()) + "\"" : "null");
+        }
+        if (obj instanceof TrafficEventEntity) {
+            TrafficEventEntity te = (TrafficEventEntity) obj;
+            return String.format(Locale.US,
+                    "{\"id\":\"%s\",\"originId\":\"%s\",\"destinationId\":\"%s\",\"oldMultiplier\":%.2f,\"newMultiplier\":%.2f,\"timestamp\":%d,\"source\":\"%s\",\"affectedOptimizationId\":%s,\"processed\":%s}",
+                    escape(te.getId()), escape(te.getOriginId()), escape(te.getDestinationId()),
+                    te.getOldMultiplier(), te.getNewMultiplier(), te.getTimestamp(), escape(te.getSource()),
+                    te.getAffectedOptimizationId() != null ? "\"" + escape(te.getAffectedOptimizationId()) + "\"" : "null",
+                    te.isProcessed());
+        }
         if (obj instanceof ApiErrorResponse) {
             ApiErrorResponse e = (ApiErrorResponse) obj;
             return String.format(Locale.US,

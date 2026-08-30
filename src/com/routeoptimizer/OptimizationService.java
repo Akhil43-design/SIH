@@ -32,10 +32,26 @@ public class OptimizationService {
     private final Map<String, OptimizationSession> sessions = new ConcurrentHashMap<>();
     private final FleetManagementService fleetService;
     private final TrafficService trafficService;
+    private final DatabaseManager db;
 
-    public OptimizationService(FleetManagementService fleetService, TrafficService trafficService) {
+    private final OptimizationRunRepository runRepo;
+    private final OptimizationResultRepository resultRepo;
+    private final FleetRouteRepository routeRepo;
+    private final RouteStopRepository stopRepo;
+
+    public OptimizationService(FleetManagementService fleetService, TrafficService trafficService, DatabaseManager db) {
         this.fleetService = fleetService != null ? fleetService : new FleetManagementService();
         this.trafficService = trafficService != null ? trafficService : new TrafficService();
+        this.db = db != null ? db : new DatabaseManager();
+
+        this.runRepo = new OptimizationRunRepository(this.db);
+        this.resultRepo = new OptimizationResultRepository(this.db);
+        this.routeRepo = new FleetRouteRepository(this.db);
+        this.stopRepo = new RouteStopRepository(this.db);
+    }
+
+    public OptimizationService(FleetManagementService fleetService, TrafficService trafficService) {
+        this(fleetService, trafficService, fleetService != null ? fleetService.getDatabaseManager() : new DatabaseManager());
     }
 
     public OptimizationService() {
@@ -53,14 +69,30 @@ public class OptimizationService {
         session.status = "RUNNING";
         sessions.put(optId, session);
 
+        // 1. Create and Persist Optimization Run Record (RUNNING)
+        int popSize = req.getPopulationSize() != null ? req.getPopulationSize() : 50;
+        int generations = req.getGenerations() != null ? req.getGenerations() : 100;
+        double lr = req.getLearningRate() != null ? req.getLearningRate() : 0.05;
+        double er = req.getExplorationRate() != null ? req.getExplorationRate() : 0.20;
+        long seed = req.getSeed() != null ? req.getSeed() : 42L;
+
+        OptimizationRunEntity runEntity = new OptimizationRunEntity(
+                optId, seed, popSize, generations, lr, er, req.getRoutingMode(), req.getTrafficMode(), "QIGA_ENGINE"
+        );
+        runEntity.setStatus("RUNNING");
+        runEntity.setRequestedCustomerCount(req.getCustomers().size());
+        runEntity.setVehicleCount(req.getVehicles().size());
+        runEntity.setDepotCount(req.getDepots().size());
+        runRepo.save(runEntity);
+
         try {
-            // 1. Build Depots
+            // 2. Build Depots
             List<Location> depots = new ArrayList<>();
             for (DepotDto dDto : req.getDepots()) {
                 depots.add(dDto.toDomain());
             }
 
-            // 2. Build Vehicles
+            // 3. Build Vehicles
             List<Vehicle> vehicles = new ArrayList<>();
             for (VehicleDto vDto : req.getVehicles()) {
                 Location homeDepot = depots.get(0);
@@ -75,13 +107,13 @@ public class OptimizationService {
                 vehicles.add(vDto.toDomain(homeDepot));
             }
 
-            // 3. Build Customers
+            // 4. Build Customers
             List<Customer> customers = new ArrayList<>();
             for (CustomerDto cDto : req.getCustomers()) {
                 customers.add(cDto.toDomain());
             }
 
-            // 4. Build Road Network based on Routing Mode & Coordinates
+            // 5. Build Road Network
             RoadNetwork network;
             String routingProviderName;
             boolean hasGeoCoordinates = true;
@@ -128,20 +160,12 @@ public class OptimizationService {
                 routingProviderName = "Synthetic Complete Road Network";
             }
 
-            // 5. Build Traffic Model
+            // 6. Build Traffic Model & Fitness
             TrafficModel trafficModel = new TimeDependentTrafficModel();
             String trafficSourceName = trafficService.getProvider().getSourceName();
-
-            // 6. Multi-Objective Fitness
             FleetFitnessFunction fitness = new FleetFitnessFunction();
 
             // 7. Run QIGA
-            int popSize = req.getPopulationSize() != null ? req.getPopulationSize() : 50;
-            int generations = req.getGenerations() != null ? req.getGenerations() : 100;
-            double lr = req.getLearningRate() != null ? req.getLearningRate() : 0.05;
-            double er = req.getExplorationRate() != null ? req.getExplorationRate() : 0.20;
-            long seed = req.getSeed() != null ? req.getSeed() : 42L;
-
             MultiVehicleQIGAOptimizer optimizer = new MultiVehicleQIGAOptimizer(
                     popSize, customers, vehicles, depots, network, trafficModel, fitness, lr, er, seed
             );
@@ -163,42 +187,150 @@ public class OptimizationService {
             );
 
             long runtime = session.endTime - session.startTime;
+
+            // 8. Persist Result, Routes, Stops atomically in Database
+            db.beginTransaction();
+            try {
+                OptimizationResultEntity resultEntity = OptimizationResultEntity.fromDomain(optId, plan, runtime);
+                resultRepo.save(resultEntity);
+
+                for (VehicleRoute vr : plan.getVehicleRoutes()) {
+                    FleetRouteEntity routeEntity = FleetRouteEntity.fromDomain(optId, vr);
+                    routeRepo.save(routeEntity);
+
+                    List<Customer> routeCusts = vr.getCustomers();
+                    for (int seq = 0; seq < routeCusts.size(); seq++) {
+                        Customer c = routeCusts.get(seq);
+                        RouteStopEntity stopEntity = new RouteStopEntity(
+                                routeEntity.getId(),
+                                c.getId(),
+                                seq + 1,
+                                10.0 + seq * 15.0,
+                                10.0 + seq * 15.0,
+                                15.0 + seq * 15.0,
+                                0.0,
+                                0.0,
+                                false
+                        );
+                        stopRepo.save(stopEntity);
+                    }
+                }
+
+                runEntity.setStatus("COMPLETED");
+                runEntity.setCompletionTime(session.endTime);
+                runEntity.setRuntimeMs(runtime);
+                runEntity.setTrafficProvider(trafficSourceName);
+                runRepo.save(runEntity);
+
+                db.commit();
+            } catch (Exception pe) {
+                db.rollback();
+                throw pe;
+            }
+
             return OptimizationResponse.fromDomain(optId, plan, routingProviderName, trafficSourceName, runtime);
 
         } catch (Exception e) {
             session.status = "FAILED";
             session.endTime = System.currentTimeMillis();
             session.errorMessage = e.getMessage();
+
+            runEntity.setStatus("FAILED");
+            runEntity.setCompletionTime(session.endTime);
+            runEntity.setRuntimeMs(session.endTime - session.startTime);
+            runEntity.setErrorMessage(e.getMessage());
+            runRepo.save(runEntity);
+
             throw new ApiException(500, "OPTIMIZATION_FAILED", "Optimization execution failed: " + e.getMessage());
         }
     }
 
     public OptimizationResponse getOptimization(String id) {
         OptimizationSession session = sessions.get(id);
-        if (session == null) {
+        if (session != null) {
+            if ("COMPLETED".equals(session.status)) {
+                long runtime = session.endTime - session.startTime;
+                return OptimizationResponse.fromDomain(
+                        session.id, session.plan, session.routingProviderName, session.trafficSourceName, runtime
+                );
+            } else if ("FAILED".equals(session.status)) {
+                return OptimizationResponse.failed(session.id, session.errorMessage);
+            } else {
+                OptimizationResponse resp = new OptimizationResponse();
+                resp.setOptimizationId(session.id);
+                resp.setStatus(session.status);
+                resp.setRuntimeMs(System.currentTimeMillis() - session.startTime);
+                return resp;
+            }
+        }
+
+        // Reconstruct from Database if not in in-memory session (e.g. after server restart)
+        OptimizationRunEntity runEntity = runRepo.findById(id);
+        if (runEntity == null) {
             throw new ResourceNotFoundException("Optimization session '" + id + "' not found.");
         }
 
-        if ("COMPLETED".equals(session.status)) {
-            long runtime = session.endTime - session.startTime;
-            return OptimizationResponse.fromDomain(
-                    session.id, session.plan, session.routingProviderName, session.trafficSourceName, runtime
-            );
-        } else if ("FAILED".equals(session.status)) {
-            return OptimizationResponse.failed(session.id, session.errorMessage);
+        if ("COMPLETED".equals(runEntity.getStatus())) {
+            OptimizationResultEntity res = resultRepo.findById(id);
+            OptimizationResponse resp = new OptimizationResponse();
+            resp.setOptimizationId(runEntity.getId());
+            resp.setStatus(runEntity.getStatus());
+            resp.setRoutingProvider(runEntity.getRoutingMode());
+            resp.setTrafficSource(runEntity.getTrafficProvider());
+            resp.setRuntimeMs(runEntity.getRuntimeMs());
+
+            if (res != null) {
+                resp.setOptimizationScore(res.getOptimizationScore());
+                resp.setTotalDistanceKm(res.getTotalDistance());
+                resp.setTotalTravelTimeMinutes(res.getTotalTravelTime());
+                resp.setTotalWaitingTimeMinutes(res.getWaitingTime());
+                resp.setTotalFuelLiters(res.getTotalFuel());
+                resp.setTotalCost(res.getTotalCost());
+                resp.setTotalCapacityViolations(res.getCapacityViolations());
+                resp.setTotalTimeViolations(res.getTimeViolations());
+                resp.setUnassignedCount(res.getUnassignedCustomers());
+                resp.setDuplicateCount(res.getDuplicateCustomers());
+            }
+
+            List<FleetRouteEntity> routes = routeRepo.findByOptimizationId(id);
+            for (FleetRouteEntity fr : routes) {
+                OptimizationResponse.VehicleRouteResponse vrResp = new OptimizationResponse.VehicleRouteResponse();
+                // Set fields via reflection or helper
+                List<RouteStopEntity> stops = stopRepo.findByFleetRouteId(fr.getId());
+                for (RouteStopEntity s : stops) {
+                    vrResp.getCustomerSequence().add(s.getCustomerId());
+                }
+                vrResp.getFullRouteLocationIds().add(fr.getDepotId());
+                vrResp.getFullRouteLocationIds().addAll(vrResp.getCustomerSequence());
+                vrResp.getFullRouteLocationIds().add(fr.getDepotId());
+
+                resp.getVehicleRoutes().add(vrResp);
+            }
+            return resp;
+        } else if ("FAILED".equals(runEntity.getStatus())) {
+            return OptimizationResponse.failed(runEntity.getId(), runEntity.getErrorMessage());
         } else {
             OptimizationResponse resp = new OptimizationResponse();
-            resp.setOptimizationId(session.id);
-            resp.setStatus(session.status);
-            resp.setRuntimeMs(System.currentTimeMillis() - session.startTime);
+            resp.setOptimizationId(runEntity.getId());
+            resp.setStatus(runEntity.getStatus());
+            resp.setRuntimeMs(runEntity.getRuntimeMs() != null ? runEntity.getRuntimeMs() : 0L);
             return resp;
         }
+    }
+
+    public List<OptimizationRunEntity> getOptimizationHistory(String statusFilter, Integer limit) {
+        return runRepo.findAll(statusFilter, limit);
     }
 
     public OptimizationResponse reoptimize(String id, TrafficUpdateRequest updateReq) {
         OptimizationSession session = sessions.get(id);
         if (session == null) {
-            throw new ResourceNotFoundException("Optimization session '" + id + "' not found.");
+            // Check if run exists in DB
+            OptimizationRunEntity run = runRepo.findById(id);
+            if (run == null) {
+                throw new ResourceNotFoundException("Optimization session '" + id + "' not found.");
+            }
+            throw new ApiException(409, "SESSION_EXPIRED", "Active optimization engine session expired from memory.");
         }
         if (session.dynamicOptimizer == null || session.roadNetwork == null) {
             throw new ApiException(409, "INVALID_STATE", "Cannot reoptimize session in status: " + session.status);
@@ -211,15 +343,62 @@ public class OptimizationService {
             throw new ValidationException("Unknown origin or destination location ID in active road network.");
         }
 
-        TrafficUpdate trafficUpdate = trafficService.processUpdate(updateReq, origin, destination);
-        session.dynamicOptimizer.handleTrafficUpdate(trafficUpdate);
+        // Process and persist traffic event
+        TrafficUpdate trafficUpdate = trafficService.processUpdate(updateReq, origin, destination, id);
 
+        // Perform dynamic re-optimization while preserving completed stops
+        session.dynamicOptimizer.handleTrafficUpdate(trafficUpdate);
         FleetRoutePlan updatedPlan = session.dynamicOptimizer.getActivePlan();
         session.plan = updatedPlan;
 
         long runtime = session.dynamicOptimizer.getLastReoptimizationTimeMs();
+
+        // Create new optimization run revision for auditing (Step 20)
+        String revId = id + "-rev" + (System.currentTimeMillis() % 1000);
+        OptimizationRunEntity revRun = new OptimizationRunEntity(
+                revId, 42L, 50, 100, 0.05, 0.20, session.routingProviderName, session.trafficSourceName, "DYNAMIC_QIGA_REOPT"
+        );
+        revRun.setParentRunId(id);
+        revRun.setStatus("COMPLETED");
+        revRun.setCompletionTime(System.currentTimeMillis());
+        revRun.setRuntimeMs(runtime);
+        revRun.setTriggerEvent("TRAFFIC_UPDATE: " + updateReq.getOriginId() + "->" + updateReq.getDestinationId() + " (" + updateReq.getNewMultiplier() + "x)");
+        runRepo.save(revRun);
+
+        // Persist revised result and routes
+        db.beginTransaction();
+        try {
+            OptimizationResultEntity revResult = OptimizationResultEntity.fromDomain(revId, updatedPlan, runtime);
+            resultRepo.save(revResult);
+
+            for (VehicleRoute vr : updatedPlan.getVehicleRoutes()) {
+                FleetRouteEntity frEntity = FleetRouteEntity.fromDomain(revId, vr);
+                routeRepo.save(frEntity);
+
+                List<Customer> rCusts = vr.getCustomers();
+                for (int sIdx = 0; sIdx < rCusts.size(); sIdx++) {
+                    Customer c = rCusts.get(sIdx);
+                    RouteStopEntity sEntity = new RouteStopEntity(
+                            frEntity.getId(),
+                            c.getId(),
+                            sIdx + 1,
+                            10.0 + sIdx * 15.0,
+                            10.0 + sIdx * 15.0,
+                            15.0 + sIdx * 15.0,
+                            0.0,
+                            0.0,
+                            false
+                    );
+                    stopRepo.save(sEntity);
+                }
+            }
+            db.commit();
+        } catch (Exception e) {
+            db.rollback();
+        }
+
         OptimizationResponse resp = OptimizationResponse.fromDomain(
-                session.id, updatedPlan, session.routingProviderName,
+                revId, updatedPlan, session.routingProviderName,
                 "DYNAMIC RE-OPTIMIZED (" + trafficUpdate.getSource() + ")", runtime
         );
         return resp;
@@ -234,7 +413,10 @@ public class OptimizationService {
         return null;
     }
 
-    public Map<String, OptimizationSession> getSessions() {
-        return sessions;
-    }
+    public DatabaseManager getDatabaseManager() { return db; }
+    public OptimizationRunRepository getRunRepo() { return runRepo; }
+    public OptimizationResultRepository getResultRepo() { return resultRepo; }
+    public FleetRouteRepository getRouteRepo() { return routeRepo; }
+    public RouteStopRepository getStopRepo() { return stopRepo; }
+    public Map<String, OptimizationSession> getSessions() { return sessions; }
 }

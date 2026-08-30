@@ -16,6 +16,7 @@ import java.util.concurrent.Executors;
 public class RestApiServer {
 
     private final ServerConfiguration config;
+    private final DatabaseManager databaseManager;
     private final FleetManagementService fleetService;
     private final TrafficService trafficService;
     private final OptimizationService optimizationService;
@@ -29,11 +30,13 @@ public class RestApiServer {
 
     private HttpServer server;
 
-    public RestApiServer(ServerConfiguration config) {
+    public RestApiServer(ServerConfiguration config, DatabaseManager db) {
         this.config = config != null ? config : new ServerConfiguration();
-        this.fleetService = new FleetManagementService();
-        this.trafficService = new TrafficService();
-        this.optimizationService = new OptimizationService(this.fleetService, this.trafficService);
+        this.databaseManager = db != null ? db : new DatabaseManager();
+
+        this.fleetService = new FleetManagementService(this.databaseManager);
+        this.trafficService = new TrafficService(this.databaseManager);
+        this.optimizationService = new OptimizationService(this.fleetService, this.trafficService, this.databaseManager);
 
         this.healthController = new HealthController(this.config);
         this.customerController = new CustomerController(this.fleetService);
@@ -43,12 +46,16 @@ public class RestApiServer {
         this.optimizationController = new OptimizationController(this.optimizationService);
     }
 
+    public RestApiServer(ServerConfiguration config) {
+        this(config, new DatabaseManager());
+    }
+
     public RestApiServer(int port) {
-        this(new ServerConfiguration(port, "*", "SYNTHETIC", "SIMULATED"));
+        this(new ServerConfiguration(port, "*", "SYNTHETIC", "SIMULATED"), new DatabaseManager());
     }
 
     public RestApiServer() {
-        this(new ServerConfiguration());
+        this(new ServerConfiguration(), new DatabaseManager());
     }
 
     public void start() throws IOException {
@@ -170,6 +177,8 @@ public class RestApiServer {
                     responseJson = String.format(Locale.US,
                             "{\"status\":\"UPDATED\",\"originId\":\"%s\",\"destinationId\":\"%s\",\"newMultiplier\":%.2f}",
                             JsonUtils.escape(tu.getOrigin().getId()), JsonUtils.escape(tu.getDestination().getId()), tu.getNewMultiplier());
+                } else if (path.equals("/api/v1/optimization") && "GET".equalsIgnoreCase(method)) {
+                    responseJson = JsonUtils.toJson(optimizationController.getOptimizationHistory(null, 50));
                 } else if (path.equals("/api/v1/optimization/run") && "POST".equalsIgnoreCase(method)) {
                     OptimizationRequest req = JsonUtils.parseOptimizationRequest(body);
                     OptimizationResponse resp = optimizationController.runOptimization(req);
@@ -224,6 +233,7 @@ public class RestApiServer {
         }
     }
 
+    public DatabaseManager getDatabaseManager() { return databaseManager; }
     public FleetManagementService getFleetService() { return fleetService; }
     public TrafficService getTrafficService() { return trafficService; }
     public OptimizationService getOptimizationService() { return optimizationService; }

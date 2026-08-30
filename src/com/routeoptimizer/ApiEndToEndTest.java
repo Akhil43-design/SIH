@@ -18,9 +18,14 @@ public class ApiEndToEndTest {
         System.out.println("========================================");
         System.out.println();
 
-        // Start Server on Port 8089 for testing
+        // Start Server on Port 8089 with clean in-memory database for isolated test execution
         int testPort = 8089;
-        RestApiServer server = new RestApiServer(testPort);
+        DatabaseManager testDb = new DatabaseManager(
+                new DatabaseConfiguration(DatabaseConfiguration.DatabaseType.EMBEDDED_IN_MEMORY, null)
+        );
+        ServerConfiguration serverConfig = new ServerConfiguration(testPort, "*", "SYNTHETIC", "SIMULATED");
+        RestApiServer server = new RestApiServer(serverConfig, testDb);
+
         HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
                 .build();
@@ -111,7 +116,16 @@ public class ApiEndToEndTest {
             System.out.println("6. GET /api/v1/optimization/" + optId + " -> Status: " + getOptResp.statusCode());
             boolean t6 = getOptResp.statusCode() == 200;
 
-            // 7. Test POST /api/v1/traffic/update
+            // 7. Test GET /api/v1/optimization (History endpoint)
+            HttpRequest getHistoryReq = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/optimization"))
+                    .GET()
+                    .build();
+            HttpResponse<String> getHistoryResp = client.send(getHistoryReq, HttpResponse.BodyHandlers.ofString());
+            System.out.println("7. GET /api/v1/optimization -> Status: " + getHistoryResp.statusCode());
+            boolean t7 = getHistoryResp.statusCode() == 200 && getHistoryResp.body().contains(optId);
+
+            // 8. Test POST /api/v1/traffic/update
             String trafficUpdateJson = "{\"originId\":\"W1\",\"destinationId\":\"C1\",\"oldMultiplier\":1.0,\"newMultiplier\":2.5,\"source\":\"SIMULATED_TEST\"}";
             HttpRequest trafficReq = HttpRequest.newBuilder()
                     .uri(URI.create(baseUrl + "/traffic/update"))
@@ -119,29 +133,29 @@ public class ApiEndToEndTest {
                     .POST(HttpRequest.BodyPublishers.ofString(trafficUpdateJson))
                     .build();
             HttpResponse<String> trafficResp = client.send(trafficReq, HttpResponse.BodyHandlers.ofString());
-            System.out.println("7. POST /api/v1/traffic/update -> Status: " + trafficResp.statusCode());
-            boolean t7 = trafficResp.statusCode() == 200;
+            System.out.println("8. POST /api/v1/traffic/update -> Status: " + trafficResp.statusCode());
+            boolean t8 = trafficResp.statusCode() == 200;
 
-            // 8. Test POST /api/v1/optimization/{id}/reoptimize
+            // 9. Test POST /api/v1/optimization/{id}/reoptimize
             HttpRequest reoptReq = HttpRequest.newBuilder()
                     .uri(URI.create(baseUrl + "/optimization/" + optId + "/reoptimize"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(trafficUpdateJson))
                     .build();
             HttpResponse<String> reoptResp = client.send(reoptReq, HttpResponse.BodyHandlers.ofString());
-            System.out.println("8. POST /api/v1/optimization/" + optId + "/reoptimize -> Status: " + reoptResp.statusCode());
-            boolean t8 = reoptResp.statusCode() == 200;
+            System.out.println("9. POST /api/v1/optimization/" + optId + "/reoptimize -> Status: " + reoptResp.statusCode());
+            boolean t9 = reoptResp.statusCode() == 200;
 
-            // 9. Test Error Handling 404 (Not Found)
+            // 10. Test Error Handling 404 (Not Found)
             HttpRequest notFoundReq = HttpRequest.newBuilder()
                     .uri(URI.create(baseUrl + "/customers/NON_EXISTENT_ID"))
                     .GET()
                     .build();
             HttpResponse<String> notFoundResp = client.send(notFoundReq, HttpResponse.BodyHandlers.ofString());
-            System.out.println("9. GET /api/v1/customers/NON_EXISTENT_ID -> Status: " + notFoundResp.statusCode() + " (Expected 404)");
-            boolean t9 = notFoundResp.statusCode() == 404 && notFoundResp.body().contains("\"NOT_FOUND\"");
+            System.out.println("10. GET /api/v1/customers/NON_EXISTENT_ID -> Status: " + notFoundResp.statusCode() + " (Expected 404)");
+            boolean t10 = notFoundResp.statusCode() == 404 && notFoundResp.body().contains("\"NOT_FOUND\"");
 
-            // 10. Test Error Handling 400 (Validation Failure)
+            // 11. Test Error Handling 400 (Validation Failure)
             String invalidCustJson = "{\"id\":\"\",\"name\":\"No ID Customer\"}";
             HttpRequest badReq = HttpRequest.newBuilder()
                     .uri(URI.create(baseUrl + "/customers"))
@@ -149,10 +163,10 @@ public class ApiEndToEndTest {
                     .POST(HttpRequest.BodyPublishers.ofString(invalidCustJson))
                     .build();
             HttpResponse<String> badResp = client.send(badReq, HttpResponse.BodyHandlers.ofString());
-            System.out.println("10. POST /api/v1/customers (Invalid) -> Status: " + badResp.statusCode() + " (Expected 400)");
-            boolean t10 = badResp.statusCode() == 400 && badResp.body().contains("\"VALIDATION_ERROR\"");
+            System.out.println("11. POST /api/v1/customers (Invalid) -> Status: " + badResp.statusCode() + " (Expected 400)");
+            boolean t11 = badResp.statusCode() == 400 && badResp.body().contains("\"VALIDATION_ERROR\"");
 
-            allPassed = t1 && t2 && t3 && t4 && t5 && t6 && t7 && t8 && t9 && t10;
+            allPassed = t1 && t2 && t3 && t4 && t5 && t6 && t7 && t8 && t9 && t10 && t11;
 
             System.out.println();
             System.out.println("========================================");

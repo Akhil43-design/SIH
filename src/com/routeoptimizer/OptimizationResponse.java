@@ -47,17 +47,29 @@ public class OptimizationResponse {
         }
 
         public String getVehicleId() { return vehicleId; }
+        public void setVehicleId(String vehicleId) { this.vehicleId = vehicleId; }
         public String getDepotId() { return depotId; }
+        public void setDepotId(String depotId) { this.depotId = depotId; }
         public List<String> getCustomerSequence() { return customerSequence; }
+        public void setCustomerSequence(List<String> customerSequence) { this.customerSequence = customerSequence; }
         public List<String> getFullRouteLocationIds() { return fullRouteLocationIds; }
+        public void setFullRouteLocationIds(List<String> fullRouteLocationIds) { this.fullRouteLocationIds = fullRouteLocationIds; }
         public Double getTotalDistanceKm() { return totalDistanceKm; }
+        public void setTotalDistanceKm(Double totalDistanceKm) { this.totalDistanceKm = totalDistanceKm; }
         public Double getTotalTravelTimeMinutes() { return totalTravelTimeMinutes; }
+        public void setTotalTravelTimeMinutes(Double totalTravelTimeMinutes) { this.totalTravelTimeMinutes = totalTravelTimeMinutes; }
         public Double getTotalFuelLiters() { return totalFuelLiters; }
+        public void setTotalFuelLiters(Double totalFuelLiters) { this.totalFuelLiters = totalFuelLiters; }
         public Double getTotalCost() { return totalCost; }
+        public void setTotalCost(Double totalCost) { this.totalCost = totalCost; }
         public Double getTotalDemand() { return totalDemand; }
+        public void setTotalDemand(Double totalDemand) { this.totalDemand = totalDemand; }
         public Double getVehicleCapacity() { return vehicleCapacity; }
+        public void setVehicleCapacity(Double vehicleCapacity) { this.vehicleCapacity = vehicleCapacity; }
         public Double getCapacityViolation() { return capacityViolation; }
+        public void setCapacityViolation(Double capacityViolation) { this.capacityViolation = capacityViolation; }
         public Integer getTimeViolations() { return timeViolations; }
+        public void setTimeViolations(Integer timeViolations) { this.timeViolations = timeViolations; }
     }
 
     private String optimizationId;
@@ -126,20 +138,44 @@ public class OptimizationResponse {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public Double getOptimizationScore() { return optimizationScore; }
+    public void setOptimizationScore(Double optimizationScore) { this.optimizationScore = optimizationScore; }
+    public void setOptimizationScore(double optimizationScore) { this.optimizationScore = optimizationScore; }
     public Double getTotalDistanceKm() { return totalDistanceKm; }
+    public void setTotalDistanceKm(Double totalDistanceKm) { this.totalDistanceKm = totalDistanceKm; }
+    public void setTotalDistanceKm(double totalDistanceKm) { this.totalDistanceKm = totalDistanceKm; }
     public Double getTotalTravelTimeMinutes() { return totalTravelTimeMinutes; }
+    public void setTotalTravelTimeMinutes(Double totalTravelTimeMinutes) { this.totalTravelTimeMinutes = totalTravelTimeMinutes; }
+    public void setTotalTravelTimeMinutes(double totalTravelTimeMinutes) { this.totalTravelTimeMinutes = totalTravelTimeMinutes; }
     public Double getTotalWaitingTimeMinutes() { return totalWaitingTimeMinutes; }
+    public void setTotalWaitingTimeMinutes(Double totalWaitingTimeMinutes) { this.totalWaitingTimeMinutes = totalWaitingTimeMinutes; }
+    public void setTotalWaitingTimeMinutes(double totalWaitingTimeMinutes) { this.totalWaitingTimeMinutes = totalWaitingTimeMinutes; }
     public Double getTotalFuelLiters() { return totalFuelLiters; }
+    public void setTotalFuelLiters(Double totalFuelLiters) { this.totalFuelLiters = totalFuelLiters; }
+    public void setTotalFuelLiters(double totalFuelLiters) { this.totalFuelLiters = totalFuelLiters; }
     public Double getTotalCost() { return totalCost; }
+    public void setTotalCost(Double totalCost) { this.totalCost = totalCost; }
+    public void setTotalCost(double totalCost) { this.totalCost = totalCost; }
     public Integer getTotalCapacityViolations() { return totalCapacityViolations; }
+    public void setTotalCapacityViolations(Integer totalCapacityViolations) { this.totalCapacityViolations = totalCapacityViolations; }
+    public void setTotalCapacityViolations(int totalCapacityViolations) { this.totalCapacityViolations = totalCapacityViolations; }
     public Integer getTotalTimeViolations() { return totalTimeViolations; }
+    public void setTotalTimeViolations(Integer totalTimeViolations) { this.totalTimeViolations = totalTimeViolations; }
+    public void setTotalTimeViolations(int totalTimeViolations) { this.totalTimeViolations = totalTimeViolations; }
     public Integer getUnassignedCount() { return unassignedCount; }
+    public void setUnassignedCount(Integer unassignedCount) { this.unassignedCount = unassignedCount; }
+    public void setUnassignedCount(int unassignedCount) { this.unassignedCount = unassignedCount; }
     public Integer getDuplicateCount() { return duplicateCount; }
+    public void setDuplicateCount(Integer duplicateCount) { this.duplicateCount = duplicateCount; }
+    public void setDuplicateCount(int duplicateCount) { this.duplicateCount = duplicateCount; }
     public String getRoutingProvider() { return routingProvider; }
+    public void setRoutingProvider(String routingProvider) { this.routingProvider = routingProvider; }
     public String getTrafficSource() { return trafficSource; }
+    public void setTrafficSource(String trafficSource) { this.trafficSource = trafficSource; }
     public Long getRuntimeMs() { return runtimeMs; }
     public void setRuntimeMs(Long runtimeMs) { this.runtimeMs = runtimeMs; }
     public void setRuntimeMs(long runtimeMs) { this.runtimeMs = runtimeMs; }
     public List<VehicleRouteResponse> getVehicleRoutes() { return vehicleRoutes; }
+    public void setVehicleRoutes(List<VehicleRouteResponse> vehicleRoutes) { this.vehicleRoutes = vehicleRoutes; }
     public String getErrorMessage() { return errorMessage; }
+    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
 }

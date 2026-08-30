@@ -14,7 +14,8 @@ public class FleetManagementControllerTest {
         System.out.println("========================================");
         System.out.println();
 
-        FleetManagementService service = new FleetManagementService();
+        DatabaseManager db = new DatabaseManager(new DatabaseConfiguration(DatabaseConfiguration.DatabaseType.EMBEDDED_IN_MEMORY, null));
+        FleetManagementService service = new FleetManagementService(db);
         CustomerController custCtrl = new CustomerController(service);
         VehicleController vehCtrl = new VehicleController(service);
         DepotController depCtrl = new DepotController(service);

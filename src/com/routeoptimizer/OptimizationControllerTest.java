@@ -13,9 +13,10 @@ public class OptimizationControllerTest {
         System.out.println("========================================");
         System.out.println();
 
-        FleetManagementService fleetService = new FleetManagementService();
-        TrafficService trafficService = new TrafficService();
-        OptimizationService optService = new OptimizationService(fleetService, trafficService);
+        DatabaseManager db = new DatabaseManager(new DatabaseConfiguration(DatabaseConfiguration.DatabaseType.EMBEDDED_IN_MEMORY, null));
+        FleetManagementService fleetService = new FleetManagementService(db);
+        TrafficService trafficService = new TrafficService(db);
+        OptimizationService optService = new OptimizationService(fleetService, trafficService, db);
         OptimizationController controller = new OptimizationController(optService);
 
         // 1. Build Request

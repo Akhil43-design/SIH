@@ -1,5 +1,7 @@
 package com.routeoptimizer;
 
+import java.util.List;
+
 public class OptimizationController {
 
     private final OptimizationService optimizationService;
@@ -14,6 +16,10 @@ public class OptimizationController {
 
     public OptimizationResponse getOptimization(String id) {
         return optimizationService.getOptimization(id);
+    }
+
+    public List<OptimizationRunEntity> getOptimizationHistory(String statusFilter, Integer limit) {
+        return optimizationService.getOptimizationHistory(statusFilter, limit);
     }
 
     public OptimizationResponse reoptimize(String id, TrafficUpdateRequest updateReq) {
