@@ -366,6 +366,7 @@ export function App() {
         <div className="grid-column">
           <VehiclePanel
             vehicles={vehicles}
+            depots={depots}
             optimization={optimization}
             selectedVehicleId={selectedVehicleId}
             onSelectVehicle={setSelectedVehicleId}
@@ -374,12 +375,14 @@ export function App() {
 
           <CustomerPanel
             customers={customers}
+            activeCity={selectedCityId}
             optimization={optimization}
             onDataChanged={loadFleetData}
           />
 
           <DepotPanel
             depots={depots}
+            activeCity={selectedCityId}
             vehicles={vehicles}
             onDataChanged={loadFleetData}
           />

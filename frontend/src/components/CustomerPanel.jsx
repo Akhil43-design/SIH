@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { PRIORITY_COLORS } from '../utils/constants';
 import { api } from '../services/api';
 import { CsvImportModal } from './CsvImportModal';
+import { LocationPicker } from './LocationPicker';
 
-export function CustomerPanel({ customers = [], onDataChanged }) {
+export function CustomerPanel({ customers = [], activeCity, onDataChanged }) {
   const [showAll, setShowAll] = useState(false);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -100,8 +101,15 @@ export function CustomerPanel({ customers = [], onDataChanged }) {
             <input required placeholder="Customer ID (e.g. BLR-C101)" value={formData.id} onChange={e => setFormData({...formData, id: e.target.value})} disabled={!!editingId} />
             <input required placeholder="Name (e.g. ABC Electronics)" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
             <input required placeholder="City (e.g. Bengaluru)" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
-            <input required type="number" step="any" placeholder="Latitude (-90 to 90)" min="-90" max="90" value={formData.latitude} onChange={e => setFormData({...formData, latitude: e.target.value})} />
-            <input required type="number" step="any" placeholder="Longitude (-180 to 180)" min="-180" max="180" value={formData.longitude} onChange={e => setFormData({...formData, longitude: e.target.value})} />
+            
+            <div style={{ gridColumn: '1 / span 2' }}>
+              <LocationPicker 
+                activeCity={activeCity}
+                initialLat={formData.latitude}
+                initialLon={formData.longitude}
+                onChange={(lat, lon) => setFormData({...formData, latitude: lat, longitude: lon})}
+              />
+            </div>
             <input required type="number" step="any" placeholder="Demand (kg) >= 0" min="0" value={formData.demand} onChange={e => setFormData({...formData, demand: e.target.value})} />
             <select value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})}>
               <option value="HIGH">HIGH</option>

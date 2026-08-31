@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { getVehicleColor, getVehicleType, formatCurrencyINR, formatTime } from '../utils/constants';
 import { api } from '../services/api';
 
-export function VehiclePanel({ vehicles = [], optimization, selectedVehicleId, onSelectVehicle, onDataChanged }) {
+export function VehiclePanel({ vehicles = [], depots = [], optimization, selectedVehicleId, onSelectVehicle, onDataChanged }) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
@@ -113,7 +113,12 @@ export function VehiclePanel({ vehicles = [], optimization, selectedVehicleId, o
             <input required type="number" step="any" placeholder="Capacity (kg) > 0" min="0.1" value={formData.capacity} onChange={e => setFormData({...formData, capacity: e.target.value})} />
             <input required type="number" step="any" placeholder="Fuel Rate (L/km) >= 0" min="0" value={formData.fuelRate} onChange={e => setFormData({...formData, fuelRate: e.target.value})} />
             <input required type="number" step="any" placeholder="Cost/km >= 0" min="0" value={formData.costKm} onChange={e => setFormData({...formData, costKm: e.target.value})} />
-            <input required placeholder="Home Depot ID" value={formData.homeDepot} onChange={e => setFormData({...formData, homeDepot: e.target.value})} />
+            <select required value={formData.homeDepot} onChange={e => setFormData({...formData, homeDepot: e.target.value})}>
+              <option value="" disabled>Select Home Depot...</option>
+              {depots.map(d => (
+                <option key={d.id} value={d.id}>{d.id} - {d.name || 'Depot'}</option>
+              ))}
+            </select>
           </div>
           <div style={{display: 'flex', gap: '5px', justifyContent: 'flex-end'}}>
             <button type="button" className="btn btn-secondary btn-sm" onClick={resetForm}>Cancel</button>

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
+import { LocationPicker } from './LocationPicker';
 
-export function DepotPanel({ depots = [], onDataChanged }) {
+export function DepotPanel({ depots = [], activeCity, onDataChanged }) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
@@ -76,8 +77,15 @@ export function DepotPanel({ depots = [], onDataChanged }) {
             <input required placeholder="Depot ID (e.g. BLR-W3)" value={formData.id} onChange={e => setFormData({...formData, id: e.target.value})} disabled={!!editingId} />
             <input required placeholder="Depot Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
             <input required placeholder="City (e.g. Bengaluru)" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
-            <input required type="number" step="any" placeholder="Latitude (-90 to 90)" min="-90" max="90" value={formData.latitude} onChange={e => setFormData({...formData, latitude: e.target.value})} />
-            <input required type="number" step="any" placeholder="Longitude (-180 to 180)" min="-180" max="180" value={formData.longitude} onChange={e => setFormData({...formData, longitude: e.target.value})} />
+            
+            <div style={{ gridColumn: '1 / span 2' }}>
+              <LocationPicker 
+                activeCity={activeCity}
+                initialLat={formData.latitude}
+                initialLon={formData.longitude}
+                onChange={(lat, lon) => setFormData({...formData, latitude: lat, longitude: lon})}
+              />
+            </div>
           </div>
           <div style={{display: 'flex', gap: '5px', justifyContent: 'flex-end'}}>
             <button type="button" className="btn btn-secondary btn-sm" onClick={resetForm}>Cancel</button>
