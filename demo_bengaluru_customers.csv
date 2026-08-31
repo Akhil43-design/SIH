@@ -1,0 +1,21 @@
+customer_id,name,city,latitude,longitude,demand,priority,earliest_time,latest_time,service_time
+BLR-C101,ABC Electronics Whitefield,Bengaluru,12.9698,77.7499,25,HIGH,10:00,12:00,10
+BLR-C102,XYZ Retail E-City,Bengaluru,12.8452,77.6602,15,MEDIUM,11:00,14:00,5
+BLR-C103,LMN Foods Koramangala,Bengaluru,12.9352,77.6245,30,LOW,09:00,13:00,10
+BLR-C104,Tech Park Manyata,Bengaluru,13.0475,77.6200,50,HIGH,08:00,18:00,15
+BLR-C105,Indiranagar Hub,Bengaluru,12.9784,77.6408,10,MEDIUM,10:00,18:00,5
+BLR-C106,Rajajinagar Industrial,Bengaluru,12.9915,77.5524,40,HIGH,11:00,16:00,20
+BLR-C107,Jayanagar Outlet,Bengaluru,12.9308,77.5838,20,LOW,12:00,20:00,10
+BLR-C108,Marathahalli Store,Bengaluru,12.9591,77.6974,35,MEDIUM,09:00,15:00,10
+BLR-C109,Yeshwanthpur Yard,Bengaluru,13.0238,77.5489,45,HIGH,07:00,12:00,30
+BLR-C110,Hebbal Logistics,Bengaluru,13.0358,77.5970,25,MEDIUM,10:00,17:00,15
+BLR-C111,BTM Layout Delivery,Bengaluru,12.9166,77.6101,15,LOW,12:00,18:00,5
+BLR-C112,Malleswaram Hub,Bengaluru,13.0031,77.5701,20,MEDIUM,09:00,13:00,10
+BLR-C113,HSR Layout Retail,Bengaluru,12.9121,77.6446,30,HIGH,11:00,19:00,15
+BLR-C114,Bellandur IT Park,Bengaluru,12.9304,77.6784,40,HIGH,10:00,16:00,20
+BLR-C115,KR Puram Market,Bengaluru,13.0012,77.6889,50,MEDIUM,06:00,14:00,25
+BLR-C116,Yelahanka Hub,Bengaluru,13.1007,77.5963,10,LOW,10:00,15:00,5
+BLR-C117,Basavanagudi Store,Bengaluru,12.9406,77.5738,15,MEDIUM,13:00,20:00,10
+BLR-C118,Vijayanagar Outlet,Bengaluru,12.9719,77.5358,25,HIGH,09:00,15:00,15
+BLR-C119,Banashankari Hub,Bengaluru,12.9152,77.5736,35,LOW,11:00,18:00,10
+BLR-C120,Peenya Factory,Bengaluru,13.0285,77.5197,60,HIGH,08:00,18:00,45

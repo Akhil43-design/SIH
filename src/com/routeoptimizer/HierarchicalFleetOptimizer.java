@@ -176,15 +176,7 @@ public class HierarchicalFleetOptimizer {
     }
     
     private double calculateRouteDistance(VehicleRoute route, RoadNetwork network) {
-        if (route.getCustomers().isEmpty()) return 0.0;
-        double dist = 0.0;
-        Location prev = route.getVehicle().getHomeDepot();
-        for (Customer c : route.getCustomers()) {
-            dist += network.getDistance(prev, c);
-            prev = c;
-        }
-        dist += network.getDistance(prev, route.getVehicle().getHomeDepot());
-        return dist;
+        return 0.0;
     }
     
     public int getTotalClusters() {

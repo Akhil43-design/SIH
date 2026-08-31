@@ -369,16 +369,19 @@ export function App() {
             optimization={optimization}
             selectedVehicleId={selectedVehicleId}
             onSelectVehicle={setSelectedVehicleId}
+            onDataChanged={loadFleetData}
           />
 
           <CustomerPanel
             customers={customers}
             optimization={optimization}
+            onDataChanged={loadFleetData}
           />
 
           <DepotPanel
             depots={depots}
             vehicles={vehicles}
+            onDataChanged={loadFleetData}
           />
 
           <OptimizationHistory
