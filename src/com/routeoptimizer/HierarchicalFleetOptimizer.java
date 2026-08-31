@@ -103,11 +103,10 @@ public class HierarchicalFleetOptimizer {
         // 4. Execute in Parallel
         List<FleetRoutePlan> subPlans = parallelOptimizer.optimizeClusters(tasks);
         
-        // 5. Fleet Route Assembly
+        // 5. Fleet Route Assembly & Boundary Optimization
         List<VehicleRoute> finalRoutes = new ArrayList<>();
         for (FleetRoutePlan subPlan : subPlans) {
             if (subPlan != null && subPlan.getVehicleRoutes() != null) {
-                // Filter out empty routes to avoid depot-only trips
                 for (VehicleRoute vr : subPlan.getVehicleRoutes()) {
                     if (!vr.getCustomers().isEmpty()) {
                         finalRoutes.add(vr);
@@ -115,11 +114,77 @@ public class HierarchicalFleetOptimizer {
                 }
             }
         }
+        
+        performBoundaryOptimization(finalRoutes, network);
 
         long endTime = System.currentTimeMillis();
         this.totalRuntimeMs = endTime - startTime;
 
         return new FleetRoutePlan(centralDepot, finalRoutes, allCustomers, fitnessFunction);
+    }
+    
+    private void performBoundaryOptimization(List<VehicleRoute> routes, RoadNetwork network) {
+        if (routes.size() < 2) return;
+        
+        boolean improved = true;
+        int iterations = 0;
+        int maxIterations = 50; // bounded
+        
+        while (improved && iterations < maxIterations) {
+            improved = false;
+            iterations++;
+            
+            for (int i = 0; i < routes.size(); i++) {
+                VehicleRoute r1 = routes.get(i);
+                if (r1.getCustomers().isEmpty()) continue;
+                
+                for (int j = i + 1; j < routes.size(); j++) {
+                    VehicleRoute r2 = routes.get(j);
+                    if (r2.getCustomers().isEmpty()) continue;
+                    
+                    // Simple boundary heuristic: 
+                    // Try to move the last customer of r1 to the beginning of r2
+                    Customer c = r1.getCustomers().get(r1.getCustomers().size() - 1);
+                    
+                    // Check capacity constraints
+                    double currentDemand = r2.getCustomers().stream().mapToDouble(Customer::getDemand).sum();
+                    if (currentDemand + c.getDemand() <= r2.getVehicle().getCapacity()) {
+                        
+                        // Evaluate spatial distance
+                        double distR1Old = calculateRouteDistance(r1, network);
+                        double distR2Old = calculateRouteDistance(r2, network);
+                        
+                        r1.getCustomers().remove(r1.getCustomers().size() - 1);
+                        r2.getCustomers().add(0, c);
+                        
+                        double distR1New = calculateRouteDistance(r1, network);
+                        double distR2New = calculateRouteDistance(r2, network);
+                        
+                        if ((distR1New + distR2New) < (distR1Old + distR2Old)) {
+                            improved = true;
+                            break; // break inner
+                        } else {
+                            // Revert
+                            r2.getCustomers().remove(0);
+                            r1.getCustomers().add(c);
+                        }
+                    }
+                }
+                if (improved) break;
+            }
+        }
+    }
+    
+    private double calculateRouteDistance(VehicleRoute route, RoadNetwork network) {
+        if (route.getCustomers().isEmpty()) return 0.0;
+        double dist = 0.0;
+        Location prev = route.getVehicle().getHomeDepot();
+        for (Customer c : route.getCustomers()) {
+            dist += network.getDistance(prev, c);
+            prev = c;
+        }
+        dist += network.getDistance(prev, route.getVehicle().getHomeDepot());
+        return dist;
     }
     
     public int getTotalClusters() {
