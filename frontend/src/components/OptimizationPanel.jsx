@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { formatISTDateTime } from '../utils/constants';
 
-export function OptimizationPanel({ onRunOptimization, isOptimizing, latestResult }) {
+export function OptimizationPanel({ onOptimize, isOptimizing, latestResult }) {
   const [populationSize, setPopulationSize] = useState(100);
   const [generations, setGenerations] = useState(200);
   const [seed, setSeed] = useState('123456');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onRunOptimization({
+    onOptimize({
       populationSize: parseInt(populationSize, 10) || 50,
       generations: parseInt(generations, 10) || 100,
       seed: seed.trim() !== '' ? parseInt(seed, 10) : null

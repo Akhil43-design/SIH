@@ -213,15 +213,15 @@ export async function fetchOSRMRouteGeometry(waypoints) {
 }
 
 export async function getCities() {
-  const res = await fetch(`${API_BASE_URL}/datasets/cities`);
+  const res = await fetch(`${API_BASE}/cities`);
   return handleResponse(res);
 }
 
 export async function selectCityDataset(cityId) {
-  const res = await fetch(`${API_BASE_URL}/datasets/select`, {
+  const res = await fetch(`${API_BASE}/cities/${encodeURIComponent(cityId)}/load`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cityId })
+    body: JSON.stringify({})
   });
   return handleResponse(res);
 }
