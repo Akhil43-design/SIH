@@ -281,6 +281,166 @@ public class IndianCityDatasets {
                 new CustomerDto("C6", "Vytilla Mobility Hub", 9.9676, 76.3195, 20.0, "HIGH", 10.0, 540.0, 720.0)
         );
         CITY_DATASETS.put("kochi", new CityDataset(kocInfo, kocDepots, kocVehicles, kocCustomers));
+
+        // 11. Visakhapatnam, Andhra Pradesh
+        CityInfo vskInfo = new CityInfo("visakhapatnam", "Visakhapatnam", "Andhra Pradesh", 17.6868, 83.2185, 11, "Port City Logistics Hub");
+        List<DepotDto> vskDepots = Arrays.asList(new DepotDto("D1", "Gajuwaka Industrial Hub", 17.6256, 83.1833));
+        List<VehicleDto> vskVehicles = Arrays.asList(new VehicleDto("V1", 80.0, "D1", 0.12, 10.0), new VehicleDto("V2", 90.0, "D1", 0.12, 10.0));
+        List<CustomerDto> vskCustomers = Arrays.asList(
+                new CustomerDto("C1", "Maddilapalem Area", 17.7333, 83.3167, 20.0, "HIGH", 10.0, 480.0, 660.0),
+                new CustomerDto("C2", "MVP Colony", 17.7408, 83.3364, 15.0, "MEDIUM", 10.0, 500.0, 680.0),
+                new CustomerDto("C3", "Seethammadhara", 17.7441, 83.3116, 25.0, "LOW", 10.0, 490.0, 670.0),
+                new CustomerDto("C4", "NAD Junction", 17.7483, 83.2389, 20.0, "HIGH", 15.0, 520.0, 700.0),
+                new CustomerDto("C5", "Gopalapatnam", 17.7554, 83.2197, 10.0, "MEDIUM", 10.0, 480.0, 650.0),
+                new CustomerDto("C6", "Siripuram", 17.7233, 83.3166, 30.0, "HIGH", 10.0, 540.0, 720.0),
+                new CustomerDto("C7", "Kancharapalem", 17.7380, 83.2721, 15.0, "LOW", 10.0, 510.0, 690.0),
+                new CustomerDto("C8", "Kurmannapalem", 17.6534, 83.1517, 20.0, "MEDIUM", 10.0, 530.0, 710.0)
+        );
+        CITY_DATASETS.put("visakhapatnam", new CityDataset(vskInfo, vskDepots, vskVehicles, vskCustomers));
+
+        // 12. Surat, Gujarat
+        CityInfo srtInfo = new CityInfo("surat", "Surat", "Gujarat", 21.1702, 72.8311, 11, "Diamond City Transport Hub");
+        List<DepotDto> srtDepots = Arrays.asList(new DepotDto("D1", "Udhna Industrial Hub", 21.1578, 72.8407));
+        List<VehicleDto> srtVehicles = Arrays.asList(new VehicleDto("V1", 80.0, "D1", 0.12, 10.0), new VehicleDto("V2", 90.0, "D1", 0.12, 10.0));
+        List<CustomerDto> srtCustomers = Arrays.asList(
+                new CustomerDto("C1", "Adajan Area", 21.1963, 72.7933, 20.0, "HIGH", 10.0, 480.0, 660.0),
+                new CustomerDto("C2", "Piplod", 21.1601, 72.7663, 15.0, "MEDIUM", 10.0, 500.0, 680.0),
+                new CustomerDto("C3", "Vesu", 21.1394, 72.7766, 25.0, "LOW", 10.0, 490.0, 670.0),
+                new CustomerDto("C4", "Varachha", 21.2163, 72.8596, 20.0, "HIGH", 15.0, 520.0, 700.0),
+                new CustomerDto("C5", "Katargam", 21.2227, 72.8251, 10.0, "MEDIUM", 10.0, 480.0, 650.0),
+                new CustomerDto("C6", "Ring Road Hub", 21.1894, 72.8291, 30.0, "HIGH", 10.0, 540.0, 720.0),
+                new CustomerDto("C7", "Athwa Lines", 21.1818, 72.8058, 15.0, "LOW", 10.0, 510.0, 690.0),
+                new CustomerDto("C8", "Palsana", 21.0858, 72.9754, 20.0, "MEDIUM", 10.0, 530.0, 710.0)
+        );
+        CITY_DATASETS.put("surat", new CityDataset(srtInfo, srtDepots, srtVehicles, srtCustomers));
+
+        // 13. Lucknow, Uttar Pradesh
+        CityInfo lkoInfo = new CityInfo("lucknow", "Lucknow", "Uttar Pradesh", 26.8467, 80.9462, 11, "Nawab City Trade Route");
+        List<DepotDto> lkoDepots = Arrays.asList(new DepotDto("D1", "Transport Nagar Depot", 26.7725, 80.8718));
+        List<VehicleDto> lkoVehicles = Arrays.asList(new VehicleDto("V1", 80.0, "D1", 0.12, 10.0), new VehicleDto("V2", 90.0, "D1", 0.12, 10.0));
+        List<CustomerDto> lkoCustomers = Arrays.asList(
+                new CustomerDto("C1", "Gomti Nagar", 26.8488, 80.9996, 20.0, "HIGH", 10.0, 480.0, 660.0),
+                new CustomerDto("C2", "Alambagh", 26.8043, 80.9009, 15.0, "MEDIUM", 10.0, 500.0, 680.0),
+                new CustomerDto("C3", "Hazratganj", 26.8505, 80.9439, 25.0, "LOW", 10.0, 490.0, 670.0),
+                new CustomerDto("C4", "Indira Nagar", 26.8776, 80.9950, 20.0, "HIGH", 15.0, 520.0, 700.0),
+                new CustomerDto("C5", "Chowk Area", 26.8660, 80.9095, 10.0, "MEDIUM", 10.0, 480.0, 650.0),
+                new CustomerDto("C6", "Aashiana", 26.7828, 80.9157, 30.0, "HIGH", 10.0, 540.0, 720.0),
+                new CustomerDto("C7", "Mahanagar", 26.8775, 80.9575, 15.0, "LOW", 10.0, 510.0, 690.0),
+                new CustomerDto("C8", "Kapoorthala", 26.8835, 80.9416, 20.0, "MEDIUM", 10.0, 530.0, 710.0)
+        );
+        CITY_DATASETS.put("lucknow", new CityDataset(lkoInfo, lkoDepots, lkoVehicles, lkoCustomers));
+
+        // 14. Indore, Madhya Pradesh
+        CityInfo indInfo = new CityInfo("indore", "Indore", "Madhya Pradesh", 22.7196, 75.8577, 11, "Cleanest City Distribution Hub");
+        List<DepotDto> indDepots = Arrays.asList(new DepotDto("D1", "Pithampur Logistics Park", 22.6214, 75.6791));
+        List<VehicleDto> indVehicles = Arrays.asList(new VehicleDto("V1", 80.0, "D1", 0.12, 10.0), new VehicleDto("V2", 90.0, "D1", 0.12, 10.0));
+        List<CustomerDto> indCustomers = Arrays.asList(
+                new CustomerDto("C1", "Vijay Nagar", 22.7533, 75.8937, 20.0, "HIGH", 10.0, 480.0, 660.0),
+                new CustomerDto("C2", "Palasia", 22.7237, 75.8893, 15.0, "MEDIUM", 10.0, 500.0, 680.0),
+                new CustomerDto("C3", "Rajwada Market", 22.7185, 75.8550, 25.0, "LOW", 10.0, 490.0, 670.0),
+                new CustomerDto("C4", "Bhawarkuan", 22.6953, 75.8711, 20.0, "HIGH", 15.0, 520.0, 700.0),
+                new CustomerDto("C5", "Sudama Nagar", 22.6908, 75.8361, 10.0, "MEDIUM", 10.0, 480.0, 650.0),
+                new CustomerDto("C6", "Annapurna", 22.6976, 75.8335, 30.0, "HIGH", 10.0, 540.0, 720.0),
+                new CustomerDto("C7", "Saket Nagar", 22.7258, 75.8973, 15.0, "LOW", 10.0, 510.0, 690.0),
+                new CustomerDto("C8", "Mahalaxmi Nagar", 22.7663, 75.9080, 20.0, "MEDIUM", 10.0, 530.0, 710.0)
+        );
+        CITY_DATASETS.put("indore", new CityDataset(indInfo, indDepots, indVehicles, indCustomers));
+
+        // 15. Nagpur, Maharashtra
+        CityInfo nagInfo = new CityInfo("nagpur", "Nagpur", "Maharashtra", 21.1458, 79.0882, 11, "Zero Mile Freight Center");
+        List<DepotDto> nagDepots = Arrays.asList(new DepotDto("D1", "MIHAN SEZ Hub", 21.0267, 79.0287));
+        List<VehicleDto> nagVehicles = Arrays.asList(new VehicleDto("V1", 80.0, "D1", 0.12, 10.0), new VehicleDto("V2", 90.0, "D1", 0.12, 10.0));
+        List<CustomerDto> nagCustomers = Arrays.asList(
+                new CustomerDto("C1", "Dharampeth", 21.1396, 79.0601, 20.0, "HIGH", 10.0, 480.0, 660.0),
+                new CustomerDto("C2", "Sitabuldi", 21.1424, 79.0827, 15.0, "MEDIUM", 10.0, 500.0, 680.0),
+                new CustomerDto("C3", "Sadar", 21.1611, 79.0805, 25.0, "LOW", 10.0, 490.0, 670.0),
+                new CustomerDto("C4", "Wardhaman Nagar", 21.1436, 79.1354, 20.0, "HIGH", 15.0, 520.0, 700.0),
+                new CustomerDto("C5", "Manish Nagar", 21.0924, 79.0664, 10.0, "MEDIUM", 10.0, 480.0, 650.0),
+                new CustomerDto("C6", "Hingna Road", 21.1090, 78.9959, 30.0, "HIGH", 10.0, 540.0, 720.0),
+                new CustomerDto("C7", "Mahal", 21.1448, 79.1066, 15.0, "LOW", 10.0, 510.0, 690.0),
+                new CustomerDto("C8", "Pratap Nagar", 21.1190, 79.0531, 20.0, "MEDIUM", 10.0, 530.0, 710.0)
+        );
+        CITY_DATASETS.put("nagpur", new CityDataset(nagInfo, nagDepots, nagVehicles, nagCustomers));
+
+        // 16. Coimbatore, Tamil Nadu
+        CityInfo cbeInfo = new CityInfo("coimbatore", "Coimbatore", "Tamil Nadu", 11.0168, 76.9558, 11, "Manchester of South India");
+        List<DepotDto> cbeDepots = Arrays.asList(new DepotDto("D1", "Peelamedu Industrial Depot", 11.0267, 77.0090));
+        List<VehicleDto> cbeVehicles = Arrays.asList(new VehicleDto("V1", 80.0, "D1", 0.12, 10.0), new VehicleDto("V2", 90.0, "D1", 0.12, 10.0));
+        List<CustomerDto> cbeCustomers = Arrays.asList(
+                new CustomerDto("C1", "RS Puram", 11.0084, 76.9482, 20.0, "HIGH", 10.0, 480.0, 660.0),
+                new CustomerDto("C2", "Gandhipuram", 11.0180, 76.9664, 15.0, "MEDIUM", 10.0, 500.0, 680.0),
+                new CustomerDto("C3", "Saibaba Colony", 11.0276, 76.9427, 25.0, "LOW", 10.0, 490.0, 670.0),
+                new CustomerDto("C4", "Singanallur", 10.9997, 77.0270, 20.0, "HIGH", 15.0, 520.0, 700.0),
+                new CustomerDto("C5", "Saravanampatti", 11.0797, 76.9986, 10.0, "MEDIUM", 10.0, 480.0, 650.0),
+                new CustomerDto("C6", "Vadavalli", 11.0336, 76.9103, 30.0, "HIGH", 10.0, 540.0, 720.0),
+                new CustomerDto("C7", "Town Hall", 10.9983, 76.9602, 15.0, "LOW", 10.0, 510.0, 690.0),
+                new CustomerDto("C8", "Kovaipudur", 10.9238, 76.9406, 20.0, "MEDIUM", 10.0, 530.0, 710.0)
+        );
+        CITY_DATASETS.put("coimbatore", new CityDataset(cbeInfo, cbeDepots, cbeVehicles, cbeCustomers));
+
+        // 17. Bhubaneswar, Odisha
+        CityInfo bbsrInfo = new CityInfo("bhubaneswar", "Bhubaneswar", "Odisha", 20.2961, 85.8245, 11, "Temple City Regional Hub");
+        List<DepotDto> bbsrDepots = Arrays.asList(new DepotDto("D1", "Chandaka Industrial Area", 20.3533, 85.8021));
+        List<VehicleDto> bbsrVehicles = Arrays.asList(new VehicleDto("V1", 80.0, "D1", 0.12, 10.0), new VehicleDto("V2", 90.0, "D1", 0.12, 10.0));
+        List<CustomerDto> bbsrCustomers = Arrays.asList(
+                new CustomerDto("C1", "Jayadev Vihar", 20.3010, 85.8197, 20.0, "HIGH", 10.0, 480.0, 660.0),
+                new CustomerDto("C2", "Saheed Nagar", 20.2917, 85.8451, 15.0, "MEDIUM", 10.0, 500.0, 680.0),
+                new CustomerDto("C3", "Patia", 20.3470, 85.8164, 25.0, "LOW", 10.0, 490.0, 670.0),
+                new CustomerDto("C4", "Khandagiri", 20.2598, 85.7876, 20.0, "HIGH", 15.0, 520.0, 700.0),
+                new CustomerDto("C5", "Nayapalli", 20.2878, 85.8082, 10.0, "MEDIUM", 10.0, 480.0, 650.0),
+                new CustomerDto("C6", "Old Town", 20.2404, 85.8335, 30.0, "HIGH", 10.0, 540.0, 720.0),
+                new CustomerDto("C7", "Unit 9", 20.2905, 85.8339, 15.0, "LOW", 10.0, 510.0, 690.0),
+                new CustomerDto("C8", "Rasulgarh", 20.2989, 85.8569, 20.0, "MEDIUM", 10.0, 530.0, 710.0)
+        );
+        CITY_DATASETS.put("bhubaneswar", new CityDataset(bbsrInfo, bbsrDepots, bbsrVehicles, bbsrCustomers));
+
+        // 18. Chandigarh
+        CityInfo chdInfo = new CityInfo("chandigarh", "Chandigarh", "Chandigarh", 30.7333, 76.7794, 11, "Planned City Transport Hub");
+        List<DepotDto> chdDepots = Arrays.asList(new DepotDto("D1", "Industrial Area Phase 1", 30.7061, 76.8016));
+        List<VehicleDto> chdVehicles = Arrays.asList(new VehicleDto("V1", 80.0, "D1", 0.12, 10.0), new VehicleDto("V2", 90.0, "D1", 0.12, 10.0));
+        List<CustomerDto> chdCustomers = Arrays.asList(
+                new CustomerDto("C1", "Sector 17 Plaza", 30.7398, 76.7827, 20.0, "HIGH", 10.0, 480.0, 660.0),
+                new CustomerDto("C2", "Sector 22 Market", 30.7347, 76.7645, 15.0, "MEDIUM", 10.0, 500.0, 680.0),
+                new CustomerDto("C3", "Sector 35", 30.7259, 76.7554, 25.0, "LOW", 10.0, 490.0, 670.0),
+                new CustomerDto("C4", "Mani Majra", 30.7183, 76.8410, 20.0, "HIGH", 15.0, 520.0, 700.0),
+                new CustomerDto("C5", "Sector 43 ISBT", 30.7214, 76.7454, 10.0, "MEDIUM", 10.0, 480.0, 650.0),
+                new CustomerDto("C6", "Sector 9", 30.7503, 76.7909, 30.0, "HIGH", 10.0, 540.0, 720.0),
+                new CustomerDto("C7", "Sector 8", 30.7441, 76.7941, 15.0, "LOW", 10.0, 510.0, 690.0),
+                new CustomerDto("C8", "Zirakpur Hub", 30.6393, 76.8219, 20.0, "MEDIUM", 10.0, 530.0, 710.0)
+        );
+        CITY_DATASETS.put("chandigarh", new CityDataset(chdInfo, chdDepots, chdVehicles, chdCustomers));
+
+        // 19. Mysuru, Karnataka
+        CityInfo mysInfo = new CityInfo("mysuru", "Mysuru", "Karnataka", 12.2958, 76.6394, 11, "Heritage City Delivery Belt");
+        List<DepotDto> mysDepots = Arrays.asList(new DepotDto("D1", "Hebbal Industrial Estate", 12.3571, 76.6115));
+        List<VehicleDto> mysVehicles = Arrays.asList(new VehicleDto("V1", 80.0, "D1", 0.12, 10.0), new VehicleDto("V2", 90.0, "D1", 0.12, 10.0));
+        List<CustomerDto> mysCustomers = Arrays.asList(
+                new CustomerDto("C1", "Gokulam", 12.3323, 76.6268, 20.0, "HIGH", 10.0, 480.0, 660.0),
+                new CustomerDto("C2", "Kuvempunagar", 12.2741, 76.6277, 15.0, "MEDIUM", 10.0, 500.0, 680.0),
+                new CustomerDto("C3", "Jayalakshmipuram", 12.3213, 76.6341, 25.0, "LOW", 10.0, 490.0, 670.0),
+                new CustomerDto("C4", "Siddhartha Layout", 12.3168, 76.6800, 20.0, "HIGH", 15.0, 520.0, 700.0),
+                new CustomerDto("C5", "Vidyaranyapuram", 12.2828, 76.6457, 10.0, "MEDIUM", 10.0, 480.0, 650.0),
+                new CustomerDto("C6", "Vijayanagar", 12.3275, 76.6083, 30.0, "HIGH", 10.0, 540.0, 720.0),
+                new CustomerDto("C7", "Bannimantap", 12.3392, 76.6579, 15.0, "LOW", 10.0, 510.0, 690.0),
+                new CustomerDto("C8", "Nazarbad", 12.3146, 76.6669, 20.0, "MEDIUM", 10.0, 530.0, 710.0)
+        );
+        CITY_DATASETS.put("mysuru", new CityDataset(mysInfo, mysDepots, mysVehicles, mysCustomers));
+
+        // 20. Vijayawada, Andhra Pradesh
+        CityInfo vijInfo = new CityInfo("vijayawada", "Vijayawada", "Andhra Pradesh", 16.5062, 80.6480, 11, "Business Capital Hub");
+        List<DepotDto> vijDepots = Arrays.asList(new DepotDto("D1", "Autonagar Logistics Depot", 16.4862, 80.6725));
+        List<VehicleDto> vijVehicles = Arrays.asList(new VehicleDto("V1", 80.0, "D1", 0.12, 10.0), new VehicleDto("V2", 90.0, "D1", 0.12, 10.0));
+        List<CustomerDto> vijCustomers = Arrays.asList(
+                new CustomerDto("C1", "Benz Circle", 16.4975, 80.6558, 20.0, "HIGH", 10.0, 480.0, 660.0),
+                new CustomerDto("C2", "Bhavanipuram", 16.5298, 80.5985, 15.0, "MEDIUM", 10.0, 500.0, 680.0),
+                new CustomerDto("C3", "Patamata", 16.4913, 80.6698, 25.0, "LOW", 10.0, 490.0, 670.0),
+                new CustomerDto("C4", "Governor Peta", 16.5097, 80.6276, 20.0, "HIGH", 15.0, 520.0, 700.0),
+                new CustomerDto("C5", "One Town", 16.5146, 80.6138, 10.0, "MEDIUM", 10.0, 480.0, 650.0),
+                new CustomerDto("C6", "Gunadala", 16.5204, 80.6664, 30.0, "HIGH", 10.0, 540.0, 720.0),
+                new CustomerDto("C7", "Machavaram", 16.5140, 80.6487, 15.0, "LOW", 10.0, 510.0, 690.0),
+                new CustomerDto("C8", "Kankipadu", 16.4253, 80.7850, 20.0, "MEDIUM", 10.0, 530.0, 710.0)
+        );
+        CITY_DATASETS.put("vijayawada", new CityDataset(vijInfo, vijDepots, vijVehicles, vijCustomers));
     }
 
     public static List<CityInfo> getAllCities() {

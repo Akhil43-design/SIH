@@ -14,7 +14,17 @@ export const INDIAN_CITIES = [
   { id: 'kolkata', name: 'Kolkata', state: 'West Bengal', center: [22.5726, 88.3639], zoom: 11, desc: 'Eastern India Commercial Hub' },
   { id: 'ahmedabad', name: 'Ahmedabad', state: 'Gujarat', center: [23.0225, 72.5714], zoom: 11, desc: 'Textile & Industrial Freight Center' },
   { id: 'jaipur', name: 'Jaipur', state: 'Rajasthan', center: [26.9124, 75.7873], zoom: 11, desc: 'Pink City Industrial Logistics Gateway' },
-  { id: 'kochi', name: 'Kochi', state: 'Kerala', center: [9.9312, 76.2673], zoom: 11, desc: 'Port City & Coastal IT Logistics Corridor' }
+  { id: 'kochi', name: 'Kochi', state: 'Kerala', center: [9.9312, 76.2673], zoom: 11, desc: 'Port City & Coastal IT Logistics Corridor' },
+  { id: 'visakhapatnam', name: 'Visakhapatnam', state: 'Andhra Pradesh', center: [17.6868, 83.2185], zoom: 11, desc: 'Port City Logistics Hub' },
+  { id: 'surat', name: 'Surat', state: 'Gujarat', center: [21.1702, 72.8311], zoom: 11, desc: 'Diamond City Transport Hub' },
+  { id: 'lucknow', name: 'Lucknow', state: 'Uttar Pradesh', center: [26.8467, 80.9462], zoom: 11, desc: 'Nawab City Trade Route' },
+  { id: 'indore', name: 'Indore', state: 'Madhya Pradesh', center: [22.7196, 75.8577], zoom: 11, desc: 'Cleanest City Distribution Hub' },
+  { id: 'nagpur', name: 'Nagpur', state: 'Maharashtra', center: [21.1458, 79.0882], zoom: 11, desc: 'Zero Mile Freight Center' },
+  { id: 'coimbatore', name: 'Coimbatore', state: 'Tamil Nadu', center: [11.0168, 76.9558], zoom: 11, desc: 'Manchester of South India' },
+  { id: 'bhubaneswar', name: 'Bhubaneswar', state: 'Odisha', center: [20.2961, 85.8245], zoom: 11, desc: 'Temple City Regional Hub' },
+  { id: 'chandigarh', name: 'Chandigarh', state: 'Chandigarh', center: [30.7333, 76.7794], zoom: 11, desc: 'Planned City Transport Hub' },
+  { id: 'mysuru', name: 'Mysuru', state: 'Karnataka', center: [12.2958, 76.6394], zoom: 11, desc: 'Heritage City Delivery Belt' },
+  { id: 'vijayawada', name: 'Vijayawada', state: 'Andhra Pradesh', center: [16.5062, 80.6480], zoom: 11, desc: 'Business Capital Hub' }
 ];
 
 export const VEHICLE_COLORS = [

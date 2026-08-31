@@ -85,7 +85,7 @@ export function OptimizationPanel({ onRunOptimization, isOptimizing, latestResul
           style={{ width: '100%', marginTop: '4px' }}
           disabled={isOptimizing}
         >
-          {isOptimizing ? '⚡ Quantum Optimizing...' : '🚀 Run QIGA Optimization'}
+          {isOptimizing ? '⚡ Quantum Optimizing...' : '🚀 RUN CITY DEMO'}
         </button>
       </form>
 

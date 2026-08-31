@@ -10,13 +10,16 @@ public class OptimizationRequest {
     private List<CustomerDto> customers = new ArrayList<>();
     private List<VehicleDto> vehicles = new ArrayList<>();
     private List<DepotDto> depots = new ArrayList<>();
-    private String routingMode = "SYNTHETIC";
+    private String routingMode = "REAL_OSRM";
     private String trafficMode = "SIMULATED";
     private Long seed = 42L;
     private Integer populationSize = 50;
     private Integer generations = 100;
     private Double learningRate = 0.05;
     private Double explorationRate = 0.20;
+    private String optimizationMode = "STANDARD_QIGA";
+    private Integer maxClusterSize = 100;
+    private String city = "bengaluru";
 
     public OptimizationRequest() {
     }
@@ -92,4 +95,10 @@ public class OptimizationRequest {
     public void setLearningRate(Double learningRate) { this.learningRate = learningRate; }
     public Double getExplorationRate() { return explorationRate; }
     public void setExplorationRate(Double explorationRate) { this.explorationRate = explorationRate; }
+    public String getOptimizationMode() { return optimizationMode; }
+    public void setOptimizationMode(String optimizationMode) { this.optimizationMode = optimizationMode; }
+    public Integer getMaxClusterSize() { return maxClusterSize; }
+    public void setMaxClusterSize(Integer maxClusterSize) { this.maxClusterSize = maxClusterSize; }
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
 }

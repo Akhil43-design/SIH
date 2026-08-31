@@ -192,6 +192,35 @@ public class RestApiServer {
                     String id = path.substring("/api/v1/optimization/".length());
                     OptimizationResponse resp = optimizationController.getOptimization(id);
                     responseJson = JsonUtils.toJson(resp);
+                } else if (path.equals("/api/v1/scalability/status") && "GET".equalsIgnoreCase(method)) {
+                    // Mocking actual values. In a real system, these would be fetched from a globally updated state or a database.
+                    String mode = "HIERARCHICAL_QIGA"; // Or standard depending on config
+                    long runtime = 12345;
+                    long memory = MemoryProfiler.getUsedMemoryMb();
+                    double cps = 81.0;
+                    responseJson = String.format(Locale.US,
+                        "{\"customers\":1000,\"clusters\":20,\"runtimeMs\":%d,\"peakMemoryMb\":%d,\"customersPerSecond\":%.1f,\"mode\":\"%s\"}",
+                        runtime, memory, cps, mode);
+                } else if (path.equals("/api/v1/cities") && "GET".equalsIgnoreCase(method)) {
+                    responseJson = JsonUtils.toJson(IndianCityDatasets.getAllCities());
+                } else if (path.startsWith("/api/v1/cities/") && path.endsWith("/load") && "POST".equalsIgnoreCase(method)) {
+                    String cityId = path.substring("/api/v1/cities/".length(), path.length() - "/load".length());
+                    IndianCityDatasets.CityDataset dataset = fleetService.loadCityDataset(cityId);
+                    if (dataset != null) {
+                        responseJson = JsonUtils.toJson(dataset);
+                    } else {
+                        throw new ResourceNotFoundException("City not found: " + cityId);
+                    }
+                } else if (path.startsWith("/api/v1/cities/") && "GET".equalsIgnoreCase(method)) {
+                    String cityId = path.substring("/api/v1/cities/".length());
+                    IndianCityDatasets.CityDataset dataset = IndianCityDatasets.getCityDataset(cityId);
+                    if (dataset != null) {
+                        responseJson = JsonUtils.toJson(dataset);
+                    } else {
+                        throw new ResourceNotFoundException("City not found: " + cityId);
+                    }
+                } else if (path.equals("/api/v1/demo/scenarios") && "GET".equalsIgnoreCase(method)) {
+                    responseJson = "[{\"id\":\"surge_1\",\"name\":\"Morning Peak Surge\"},{\"id\":\"surge_2\",\"name\":\"Evening Peak Surge\"}]";
                 } else if (path.equals("/api/v1/datasets/cities") && "GET".equalsIgnoreCase(method)) {
                     responseJson = JsonUtils.toJson(IndianCityDatasets.getAllCities());
                 } else if (path.equals("/api/v1/datasets/select") && "POST".equalsIgnoreCase(method)) {
